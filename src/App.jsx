@@ -10,7 +10,6 @@ import WhyChooseUs from './components/WhyChooseUs';
 import Testimonials from './components/Testimonials';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
-import FlowArt, { FlowSection } from './components/story-scroll';
 
 function App() {
   useEffect(() => {
@@ -28,35 +27,17 @@ function App() {
   return (
     <div className="min-h-screen font-sans selection:bg-cyan-500/30 selection:text-cyan-600 dark:selection:text-cyan-200 transition-colors duration-500">
       <Navbar />
-      <FlowArt aria-label="Company Portfolio">
-        <FlowSection className="bg-[#030712]" innerClassName="p-0">
-          <Hero />
-        </FlowSection>
-        <FlowSection className="bg-[#030712]" innerClassName="p-0">
-          <About />
-        </FlowSection>
-        <FlowSection className="bg-[#030712]" innerClassName="p-0">
-          <Services />
-        </FlowSection>
-        <FlowSection className="bg-[#030712]" innerClassName="p-0">
-          <Projects />
-        </FlowSection>
-        <FlowSection className="bg-[#030712]" innerClassName="p-0">
-          <TechStack />
-        </FlowSection>
-        <FlowSection className="bg-[#030712]" innerClassName="p-0">
-          <MeetPeople />
-        </FlowSection>
-        <FlowSection className="bg-[#030712]" innerClassName="p-0">
-          <WhyChooseUs />
-        </FlowSection>
-        <FlowSection className="bg-[#030712]" innerClassName="p-0">
-          <Testimonials />
-        </FlowSection>
-        <FlowSection className="bg-[#030712]" innerClassName="p-0">
-          <Contact />
-        </FlowSection>
-      </FlowArt>
+      <main>
+        <Hero />
+        <About />
+        <Services />
+        <Projects />
+        <TechStack />
+        <MeetPeople />
+        <WhyChooseUs />
+        <Testimonials />
+        <Contact />
+      </main>
       <Footer />
     </div>
   );

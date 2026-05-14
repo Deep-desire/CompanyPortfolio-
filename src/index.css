@@ -1,12 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:where(.dark, .dark *));
-
-:root {
-  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-}
 
 @theme {
   --color-primary-cyan: #06b6d4;
@@ -25,7 +19,7 @@
   --color-card-bg: rgba(255, 255, 255, 0.6);
   --color-border: rgba(0, 0, 0, 0.08);
   --color-heading: #000000;
-  
+
   background-color: var(--color-bg);
   color: var(--color-text);
   scroll-behavior: smooth;
