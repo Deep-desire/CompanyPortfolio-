@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary-cyan: #06b6d4;
+  --color-primary-purple: #8b5cf6;
+  --color-primary-blue: #3b82f6;
+}
+
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  --color-bg: #f8fafc;
+  --color-text: #0f172a;
+  --color-card-bg: rgba(255, 255, 255, 0.6);
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-heading: #000000;
+  
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  scroll-behavior: smooth;
+}
+
+.dark {
+  color-scheme: dark;
+  --color-bg: #030712;
+  --color-text: rgba(255, 255, 255, 0.87);
+  --color-card-bg: rgba(17, 24, 39, 0.4);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-heading: #ffffff;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.glass-card {
+  background: var(--color-card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  transition: background 0.5s ease, border 0.5s ease;
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
