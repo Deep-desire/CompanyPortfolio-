@@ -3,7 +3,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import Services from './components/Services';
-import Portfolio from './components/Portfolio';
+import Projects from './components/Projects';
 import TechStack from './components/TechStack';
 import MeetPeople from './components/MeetPeople';
 import WhyChooseUs from './components/WhyChooseUs';
@@ -31,7 +31,7 @@ function App() {
         <Hero />
         <About />
         <Services />
-        <Portfolio />
+        <Projects />
         <TechStack />
         <MeetPeople />
         <WhyChooseUs />

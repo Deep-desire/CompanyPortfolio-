@@ -4,52 +4,42 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion } from 'motion/react';
 import { FaLinkedinIn, FaTwitter, FaBehance, FaInstagram } from 'react-icons/fa';
 import { cn } from '../lib/utils';
+import VijayPatel from "../assets/Vijay-Patel.webp";
+import YashShah from "../assets/Yash-Shah.webp";
+import SajidLanza from "../assets/Sajid-Lanza.webp";
+import ConradImage from "../assets/Conrad-Image.webp";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const DEFAULT_MEMBERS = [
   {
     id: '1',
-    name: 'Chadrack',
-    role: 'director of photography',
-    image: 'https://media.licdn.com/dms/image/v2/D4D03AQFnmLdpZW78yA/profile-displayphoto-scale_200_200/B4DZvM8NB2JMAY-/0/1768669895649?e=2147483647&v=beta&t=5VGAB-2gYupLNaHvJHECollR25THd-3oR5wngGlQiY4',
+    name: 'Vijay Patel',
+    role: 'CEO',
+    image: VijayPatel,
     social: { twitter: '#', linkedin: '#', behance: '#' },
   },
   {
     id: '2',
-    name: 'Mak VieSAinte',
-    role: 'FOUNDER',
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2vnSxNNVGZV2MXRjlGELl-NgLl5kXdpDR6A&s',
+    name: 'Yash Shah',
+    role: 'Project Manager',
+    image: YashShah,
     social: { twitter: '#', linkedin: '#' },
   },
   {
     id: '3',
-    name: 'Osiris Balonga',
-    role: 'LEAD FRONT-END',
-    image: 'https://media.licdn.com/dms/image/v2/D4D03AQGVqrPPAGHtoQ/profile-displayphoto-scale_200_200/B4DZwhAkjaHwAY-/0/1770080338529?e=2147483647&v=beta&t=q-_6p1VCJ8NN8eHj9zUFwJZds_XpKez9Hy14SAIDp4M',
+    name: 'Sajid Lanza',
+    role: 'Business Development Manager',
+    image: SajidLanza,
     social: { twitter: '#', linkedin: '#' },
   },
   {
     id: '4',
-    name: 'Jacques',
-    role: 'PRODUCT OWNER',
-    image: 'https://media.licdn.com/dms/image/v2/D4D03AQE-Z7-S1LSYNQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1724143166545?e=2147483647&v=beta&t=6IPCwgOzblGt4p2fEdnY74gMbLyRHii5Ite3A39qQsY',
+    name: 'Conrad',
+    role: 'Business Partner South Africa',
+    image: ConradImage,
     social: { linkedin: '#' },
-  },
-  {
-    id: '5',
-    name: 'Riche Makso',
-    role: 'CTO - PRODUCT DESIGNER',
-    image: 'https://media.licdn.com/dms/image/v2/D4D03AQEkTAbZLlSrLg/profile-displayphoto-scale_200_200/B4DZoHdu8BGgAY-/0/1761061833315?e=2147483647&v=beta&t=Rg1dBTvq9X2heyhuhBwG2DsEkG65v0vQ35hF2FSeYns',
-    social: { twitter: '#', linkedin: '#' },
-  },
-  {
-    id: '6',
-    name: 'Jemima',
-    role: 'MAKE-UP ARTISTE',
-    image: 'https://i.pravatar.cc/400?img=16',
-    social: { instagram: '#' },
-  },
+  }
 ];
 
 function PhotoCard({ member, className, hoveredId, onHover }) {
@@ -272,7 +262,7 @@ export default function MeetPeople() {
         ease: 'expo.out'
       });
     }, sectionRef);
-    
+
     return () => ctx.revert();
   }, []);
 
