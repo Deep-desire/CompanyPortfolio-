@@ -272,14 +272,14 @@ export default function Services() {
   }, []);
 
   return (
-    <>
+    <div id="services">
       <Process />
-      <section id="services" ref={sectionRef} className="py-32 relative z-10 bg-gray-50/50 dark:bg-[#030712]/50 transition-colors duration-500 overflow-hidden">
+      <section ref={sectionRef} className="py-32 relative z-10 bg-gray-50/50 dark:bg-[#030712]/50 transition-colors duration-500 overflow-hidden">
         {/* Abstract Background Elements */}
         <div className="bg-glow-1 absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-b from-cyan-500/5 to-transparent rounded-full blur-[150px] -z-10 pointer-events-none" />
         <div className="bg-glow-2 absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-t from-purple-500/5 to-transparent rounded-full blur-[150px] -z-10 pointer-events-none" />
 
       </section>
-    </>
+    </div>
   );
 }

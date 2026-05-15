@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import gsap from 'gsap';
@@ -15,6 +15,47 @@ import 'swiper/css/effect-fade';
 import { cn } from '../lib/utils';
 import ThreeScene from './ThreeScene';
 
+// --- Space Starfield Component ---
+function StarField({ count = 200 }) {
+  const stars = useMemo(() => {
+    return Array.from({ length: count }).map(() => ({
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      size: Math.random() * 2 + 1,
+      duration: Math.random() * 3 + 2,
+      delay: Math.random() * 5,
+    }));
+  }, [count]);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {stars.map((star, i) => (
+        <motion.div
+          key={i}
+          className="absolute bg-white rounded-full opacity-30"
+          style={{
+            top: star.top,
+            left: star.left,
+            width: star.size,
+            height: star.size,
+            boxShadow: '0 0 10px rgba(255,255,255,0.5)',
+          }}
+          animate={{
+            opacity: [0.1, 0.6, 0.1],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{
+            duration: star.duration,
+            repeat: Infinity,
+            delay: star.delay,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 // --- Rotating Earth Component (D3 Wireframe Globe) ---
 function RotatingEarth({ width = 800, height = 600, className = "" }) {
   const canvasRef = useRef(null);
@@ -28,10 +69,10 @@ function RotatingEarth({ width = 800, height = 600, className = "" }) {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    // Set up responsive dimensions
-    const containerWidth = Math.min(width, window.innerWidth - 40);
-    const containerHeight = Math.min(height, window.innerHeight - 100);
-    const radius = Math.min(containerWidth, containerHeight) / 2.2;
+    // Set up responsive dimensions with more buffer for the glow
+    const containerWidth = width;
+    const containerHeight = height;
+    const radius = Math.min(containerWidth, containerHeight) / 2.8; // More space for atmosphere
 
     const dpr = window.devicePixelRatio || 1;
     canvas.width = containerWidth * dpr;
@@ -112,14 +153,26 @@ function RotatingEarth({ width = 800, height = 600, className = "" }) {
       const currentScale = projection.scale();
       const scaleFactor = currentScale / radius;
 
-      // Draw globe background (dark atmosphere)
+      // Atmosphere Glow (Enhanced)
+      const gradient = context.createRadialGradient(
+        containerWidth / 2, containerHeight / 2, currentScale * 0.8,
+        containerWidth / 2, containerHeight / 2, currentScale * 1.15
+      );
+      gradient.addColorStop(0, "rgba(6, 182, 212, 0)");
+      gradient.addColorStop(1, "rgba(6, 182, 212, 0.25)");
+      context.beginPath();
+      context.arc(containerWidth / 2, containerHeight / 2, currentScale * 1.15, 0, 2 * Math.PI);
+      context.fillStyle = gradient;
+      context.fill();
+
+      // Globe Background
       context.beginPath();
       context.arc(containerWidth / 2, containerHeight / 2, currentScale, 0, 2 * Math.PI);
       context.fillStyle = "#000000";
       context.fill();
 
       // Glow border
-      context.strokeStyle = "rgba(6, 182, 212, 0.5)";
+      context.strokeStyle = "rgba(6, 182, 212, 0.6)";
       context.lineWidth = 3 * scaleFactor;
       context.stroke();
 
@@ -127,7 +180,7 @@ function RotatingEarth({ width = 800, height = 600, className = "" }) {
         const graticule = d3.geoGraticule();
         context.beginPath();
         path(graticule());
-        context.strokeStyle = "rgba(255, 255, 255, 0.1)";
+        context.strokeStyle = "rgba(255, 255, 255, 0.08)";
         context.lineWidth = 1 * scaleFactor;
         context.stroke();
 
@@ -135,7 +188,7 @@ function RotatingEarth({ width = 800, height = 600, className = "" }) {
         landFeatures.features.forEach((feature) => {
           path(feature);
         });
-        context.strokeStyle = "rgba(6, 182, 212, 0.3)";
+        context.strokeStyle = "rgba(6, 182, 212, 0.4)";
         context.lineWidth = 1 * scaleFactor;
         context.stroke();
 
@@ -143,8 +196,8 @@ function RotatingEarth({ width = 800, height = 600, className = "" }) {
           const projected = projection([dot.lng, dot.lat]);
           if (projected) {
             context.beginPath();
-            context.arc(projected[0], projected[1], 1 * scaleFactor, 0, 2 * Math.PI);
-            context.fillStyle = "rgba(6, 182, 212, 0.8)";
+            context.arc(projected[0], projected[1], 1.2 * scaleFactor, 0, 2 * Math.PI);
+            context.fillStyle = "rgba(6, 182, 212, 0.9)";
             context.fill();
           }
         });
@@ -172,7 +225,7 @@ function RotatingEarth({ width = 800, height = 600, className = "" }) {
     };
 
     const rotation = [0, 0];
-    const rotationSpeed = 0.5;
+    const rotationSpeed = 0.6;
     const rotate = () => {
       rotation[0] += rotationSpeed;
       projection.rotate(rotation);
@@ -203,6 +256,21 @@ export default function Hero() {
   const swiperRef = useRef(null);
   const autoplayDelay = 6000;
 
+  // reliable progress timer
+  useEffect(() => {
+    let startTime = Date.now();
+    const update = () => {
+      const elapsed = Date.now() - startTime;
+      const p = Math.min(elapsed / autoplayDelay, 1);
+      setProgress(p);
+      if (p < 1) {
+        requestAnimationFrame(update);
+      }
+    };
+    const frame = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(frame);
+  }, [activeIndex]);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from(".hero-slide-1 > *", {
@@ -224,64 +292,62 @@ export default function Hero() {
   };
 
   return (
-    <section id="home" className="relative min-h-screen pt-20 bg-[#030712]">
+    <section id="home" className="relative h-screen bg-[#030712] overflow-hidden">
       <Swiper
         onSwiper={(swiper) => {
           swiperRef.current = swiper;
         }}
         onSlideChange={(swiper) => {
-          setActiveIndex(swiper.activeIndex);
-          setProgress(0);
-        }}
-        onAutoplayTimeLeft={(s, time, timeLeft) => {
-          setProgress(1 - timeLeft / autoplayDelay);
+          setActiveIndex(swiper.realIndex);
         }}
         spaceBetween={0}
         effect={'fade'}
-        speed={1200}
-        allowTouchMove={false} // Disable manual swiping
+        fadeEffect={{ crossFade: true }}
+        speed={1500}
+        allowTouchMove={false}
         autoplay={{
           delay: autoplayDelay,
           disableOnInteraction: false,
         }}
+        loop={true}
         modules={[Autoplay, EffectFade]}
-        className="h-screen w-full"
+        className="h-full w-full"
       >
         {/* Slide 1: Original Brand Identity */}
         <SwiperSlide>
-          <div className="relative h-full flex items-center justify-center overflow-hidden">
+          <div className="relative h-full w-full flex items-center justify-center">
             <ThreeScene />
 
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/20 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyan-500/[0.08] rounded-full blur-[150px] pointer-events-none" />
 
-            <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+            <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
               <div className="hero-slide-1 text-left space-y-8 max-w-2xl">
                 <div>
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="inline-block px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-sm font-semibold mb-6 backdrop-blur-md"
+                    className="inline-block px-5 py-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 text-cyan-400 text-xs font-black mb-8 backdrop-blur-md uppercase tracking-[0.3em]"
                   >
                     Future-Ready Digital Solutions
                   </motion.div>
-                  <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight text-white">
-                    Architecting the <br />
+                  <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none text-white">
+                    Architecting <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
                       Digital Frontier.
                     </span>
                   </h1>
                 </div>
 
-                <p className="text-lg md:text-xl text-gray-400 leading-relaxed">
+                <p className="text-lg md:text-xl text-gray-400 leading-relaxed max-w-xl font-medium">
                   Desire Info Web builds high-performance, intelligent, and scalable web experiences that empower businesses to lead in a technology-driven world.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <a href="#portfolio" className="group relative px-8 py-4 bg-white text-gray-950 font-semibold rounded-full overflow-hidden flex items-center justify-center gap-2 hover:scale-105 transition-all duration-300 shadow-xl">
+                <div className="flex flex-col sm:flex-row gap-6">
+                  <a href="#portfolio" className="group relative px-10 py-5 bg-white text-gray-950 font-black rounded-full overflow-hidden flex items-center justify-center gap-2 hover:scale-105 transition-all duration-500 shadow-xl">
                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <span className="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors">View Our Work <ArrowRight size={18} /></span>
+                    <span className="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors uppercase tracking-widest">View Our Work <ArrowRight size={20} /></span>
                   </a>
-                  <a href="#contact" className="px-8 py-4 bg-transparent border border-gray-600 hover:border-gray-300 text-white font-semibold rounded-full flex items-center justify-center transition-all hover:bg-white/5">
+                  <a href="#contact" className="px-10 py-5 bg-transparent border-2 border-white/10 hover:border-white text-white font-bold rounded-full flex items-center justify-center transition-all hover:bg-white/5 uppercase tracking-widest">
                     Contact Us
                   </a>
                 </div>
@@ -292,89 +358,110 @@ export default function Hero() {
 
         {/* Slide 2: Global Connectivity & Desire InfoWeb */}
         <SwiperSlide>
-          <div className="relative h-full flex items-center justify-center bg-[#030712] overflow-hidden">
-            {/* Background Data Stream Effect */}
-            <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="relative h-full w-full flex flex-col items-center justify-center">
+            {/* Immersive Space Effects */}
+            <StarField count={250} />
+
+            <div className="absolute inset-0 opacity-15 pointer-events-none">
               <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent" />
               <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent" />
             </div>
 
-            <div className="container mx-auto px-6 relative z-10 flex flex-col items-center text-center">
-              <div className="relative w-full max-w-4xl">
-                {/* 3D Earth Overlay */}
-                <RotatingEarth width={900} height={700} className="opacity-80 scale-110" />
+            <div className="container mx-auto px-6 relative z-10 h-full flex flex-col items-center justify-center">
+              <div className="relative w-full max-w-6xl flex flex-col items-center justify-center">
+                {/* 3D Earth - Increased Size & Pulse Animation */}
+                <motion.div
+                  animate={{
+                    scale: [1, 1.02, 1],
+                    filter: ["drop-shadow(0 0 40px rgba(6,182,212,0.2))", "drop-shadow(0 0 60px rgba(6,182,212,0.4))", "drop-shadow(0 0 40px rgba(6,182,212,0.2))"]
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <RotatingEarth width={900} height={800} className="opacity-90 scale-90 md:scale-100 translate-y-12" />
+                </motion.div>
 
-                {/* Text Overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                {/* Text Overlay - Synchronized with Earth position */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20 translate-y-12">
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.5, z: -100 }}
-                    whileInView={{ opacity: 1, scale: 1, z: 0 }}
+                    initial={{ opacity: 0, scale: 0.8, y: 40 }}
+                    whileInView={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
-                    className="space-y-4"
+                    className="space-y-6 text-center"
                   >
-                    <h2 className="text-6xl md:text-9xl font-black tracking-tighter text-white drop-shadow-[0_0_30px_rgba(6,182,212,0.5)] uppercase italic">
-                      Desire <span className="text-cyan-500">Inforweb</span>
+                    <h2 className="text-7xl md:text-[150px] font-black tracking-tighter text-white drop-shadow-[0_0_60px_rgba(6,182,212,0.6)] uppercase leading-none italic">
+                      DESIRE <span className="text-cyan-500">INFORWEB</span>
                     </h2>
-                    <p className="text-cyan-400 font-bold tracking-[0.8em] text-xs md:text-sm uppercase">
-                      3D Graphical Intelligence • Global Infrastructure
-                    </p>
+                    <div className="flex items-center justify-center gap-6">
+                      <div className="h-px w-20 bg-cyan-500/30" />
+                      <p className="text-cyan-400 font-black tracking-[1.5em] text-[10px] md:text-xs uppercase">
+                        3D Graphical Information Architecture
+                      </p>
+                      <div className="h-px w-20 bg-cyan-500/30" />
+                    </div>
                   </motion.div>
                 </div>
               </div>
 
-              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-xl">
-                <p className="text-gray-500 text-sm font-medium tracking-wide">
+              <div className="mt-16 max-w-3xl text-center">
+                {/* <p className="text-gray-400 text-sm font-bold tracking-[0.4em] uppercase leading-loose opacity-50 px-4">
                   Connecting your vision to the world through high-performance 3D visualization and state-of-the-art digital architecture.
-                </p>
+                </p> */}
               </div>
             </div>
           </div>
         </SwiperSlide>
       </Swiper>
 
-      {/* --- Custom Production-Level Progress Pagination (Minimalist) --- */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-8">
-        {[0, 1].map((index) => (
-          <button
-            key={index}
-            onClick={() => handlePaginationClick(index)}
-            className="group flex flex-col gap-3 cursor-pointer outline-none focus:ring-0"
-          >
-            <div className="relative w-32 md:w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-              {/* Progress Bar Background (Active/Inactive) */}
-              <div
-                className={cn(
-                  "absolute inset-0 bg-white/5 transition-opacity duration-300",
-                  activeIndex === index ? "opacity-100" : "opacity-0"
-                )}
-              />
-
-              {/* Actual Loading Line */}
-              <motion.div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full"
-                initial={{ width: 0 }}
-                animate={{
-                  width: activeIndex === index ? `${progress * 100}%` : (activeIndex > index ? "100%" : "0%")
-                }}
-                transition={{ type: "tween", ease: "linear" }}
-              />
-            </div>
-            <div className="flex items-center justify-between px-1">
-              <span className={cn(
-                "text-[11px] font-black tracking-[0.2em] uppercase transition-all duration-300",
-                activeIndex === index ? "text-cyan-400 scale-110" : "text-gray-600"
-              )}>
-                0{index + 1}
-              </span>
-              <span className={cn(
-                "text-[9px] font-bold text-cyan-500/40 tracking-widest uppercase transition-opacity duration-300",
-                activeIndex === index ? "opacity-100" : "opacity-0"
-              )}>
-                Slide
-              </span>
-            </div>
-          </button>
-        ))}
+      {/* --- Production-Level Progress Pagination (Cyan Theme - Absolute Bottom) --- */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-12">
+        {[0, 1].map((index) => {
+          const isActuallyActive = activeIndex % 2 === index;
+          return (
+            <button
+              key={index}
+              onClick={() => handlePaginationClick(index)}
+              className="group flex flex-col gap-4 cursor-pointer outline-none focus:ring-0"
+            >
+              <div className="relative w-40 md:w-64 h-1 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-white/5 transition-opacity duration-500",
+                    isActuallyActive ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.5)]"
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: isActuallyActive ? `${progress * 100}%` : (index === 0 && activeIndex % 2 !== 0 ? "100%" : "0%")
+                  }}
+                  transition={{ type: "tween", ease: "linear" }}
+                />
+              </div>
+              <div className="flex items-center justify-between px-2">
+                <span className={cn(
+                  "text-[10px] font-black tracking-[0.4em] uppercase transition-all duration-500",
+                  isActuallyActive ? "text-cyan-400 scale-110" : "text-gray-600"
+                )}>
+                  0{index + 1}
+                </span>
+                <div className={cn(
+                  "flex items-center gap-2 transition-all duration-500",
+                  isActuallyActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                )}>
+                  <div className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="text-[8px] font-black text-cyan-400/60 tracking-[0.2em] uppercase">
+                    Active
+                  </span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </section>
   );
