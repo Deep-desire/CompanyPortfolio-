@@ -10,7 +10,7 @@ const navLinks = [
   { name: 'Contact', href: '#contact' },
 ];
 
-export default function Navbar() {
+export default function Navbar({ activeHeroIndex = 0 }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
@@ -51,7 +51,9 @@ export default function Navbar() {
           >
             <Hexagon className="text-cyan-500 dark:text-cyan-400 w-8 h-8" fill="currentColor" fillOpacity={0.2} />
           </motion.div>
-          <span className="text-xl md:text-2xl font-bold tracking-tighter text-gray-900 dark:text-white transition-colors duration-300">
+          <span className={`text-xl md:text-2xl font-bold tracking-tighter transition-colors duration-300 ${
+            (activeHeroIndex === 2 || activeHeroIndex === 0) && !isScrolled ? 'text-gray-900' : 'text-gray-900 dark:text-white'
+          }`}>
             Desire<span className="text-cyan-500 dark:text-cyan-400"></span>InfoWeb
           </span>
         </a>
@@ -62,7 +64,11 @@ export default function Navbar() {
             <a
               key={link.name}
               href={link.href}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors text-sm font-medium tracking-wide relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-[2px] after:bg-cyan-500 dark:after:bg-cyan-400 after:transition-all after:duration-300 hover:after:w-full"
+              className={`transition-colors text-sm font-medium tracking-wide relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-[2px] after:bg-cyan-500 dark:after:bg-cyan-400 after:transition-all after:duration-300 hover:after:w-full ${
+                (activeHeroIndex === 2 || activeHeroIndex === 0) && !isScrolled
+                  ? 'text-gray-600 hover:text-gray-900'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+              }`}
             >
               {link.name}
             </a>
@@ -70,7 +76,11 @@ export default function Navbar() {
 
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
+            className={`p-2 rounded-full transition-colors ${
+              (activeHeroIndex === 2 || activeHeroIndex === 0) && !isScrolled
+                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20'
+            }`}
             aria-label="Toggle Theme"
           >
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
@@ -90,12 +100,20 @@ export default function Navbar() {
         <div className="flex items-center gap-4 md:hidden">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors"
+            className={`p-2 rounded-full transition-colors ${
+              (activeHeroIndex === 2 || activeHeroIndex === 0) && !isScrolled
+                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300'
+            }`}
           >
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <button
-            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            className={`transition-colors ${
+              (activeHeroIndex === 2 || activeHeroIndex === 0) && !isScrolled
+                ? 'text-gray-600 hover:text-gray-900'
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+            }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X /> : <Menu />}

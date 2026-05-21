@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import Navbar from './components/Navbar';
+import { useEffect, useState } from 'react';
+// import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import Services from './components/Services';
@@ -12,6 +12,8 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 
 function App() {
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+
   useEffect(() => {
     // Initialize dark mode based on local storage or system preference
     const isDark = localStorage.getItem('theme') !== 'light';
@@ -26,9 +28,9 @@ function App() {
 
   return (
     <div className="min-h-screen font-sans selection:bg-cyan-500/30 selection:text-cyan-600 dark:selection:text-cyan-200 transition-colors duration-500">
-      <Navbar />
+      {/* <Navbar activeHeroIndex={activeHeroIndex} /> */}
       <main>
-        <Hero />
+        <Hero onSlideChange={setActiveHeroIndex} />
         <About />
         <Services />
         <Projects />

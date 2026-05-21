@@ -43,6 +43,10 @@ body {
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
+.hero-font {
+  font-family: 'Poppins', sans-serif;
+}
+
 .glass-card {
   background: var(--color-card-bg);
   backdrop-filter: blur(12px);
@@ -57,4 +61,110 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+
+
+/* Custom scrollbar hiding helper */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Premium Glassmorphic Card styles (Frosted for light, transparent for dark) */
+.glassmorphic-card {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.35),
+    inset 0 -0.5px 1px rgba(0, 0, 0, 0.01),
+    0 8px 32px 0 rgba(31, 38, 135, 0.03);
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.dark .glassmorphic-card {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.08),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+    0 12px 40px -5px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Diagonal reflection shine effect */
+.glassmorphic-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: none;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.glassmorphic-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.45),
+    0 16px 48px -5px rgba(99, 102, 241, 0.08),
+    0 4px 20px rgba(0, 0, 0, 0.01);
+  transform: translateY(-4px);
+}
+
+.dark .glassmorphic-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.12),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2),
+    0 20px 45px -10px rgba(139, 92, 246, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.glassmorphic-card:hover::before {
+  left: 150%;
+  transition: all 1.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Premium 3D Isometric Floating Cards */
+.glass-card-3d-left {
+  transform: perspective(1200px) rotateY(15deg) rotateX(4deg) rotateZ(-1.5deg);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.glass-card-3d-left:hover {
+  transform: perspective(1200px) rotateY(4deg) rotateX(1deg) rotateZ(0deg) scale(1.04) translateY(-6px) !important;
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.5),
+    0 25px 50px -12px rgba(124, 58, 237, 0.18) !important;
+}
+
+.glass-card-3d-right {
+  transform: perspective(1200px) rotateY(-15deg) rotateX(4deg) rotateZ(1.5deg);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.glass-card-3d-right:hover {
+  transform: perspective(1200px) rotateY(-4deg) rotateX(1deg) rotateZ(0deg) scale(1.04) translateY(-6px) !important;
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.5),
+    0 25px 50px -12px rgba(99, 102, 241, 0.18) !important;
 }
