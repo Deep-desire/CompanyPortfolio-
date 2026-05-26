@@ -455,6 +455,82 @@ function GroundPipe({ angle, color, isActive }) {
     );
 }
 
+function FlowParticles({ curve, color, isActive }) {
+    const particle1 = useRef();
+    const particle2 = useRef();
+    const particle3 = useRef();
+
+    useFrame((state) => {
+        const t = state.clock.getElapsedTime();
+        const speed = isActive ? 0.75 : 0.35;
+        
+        // Particle 1
+        if (particle1.current) {
+            const progress = (t * speed) % 1.0;
+            const point = curve.getPointAt(progress);
+            particle1.current.position.copy(point);
+            const scale = (0.045 + Math.sin(t * 4.5) * 0.01) * (isActive ? 1.5 : 1.0);
+            particle1.current.scale.set(scale, scale, scale);
+        }
+        
+        // Particle 2
+        if (particle2.current) {
+            const progress = (t * speed + 0.33) % 1.0;
+            const point = curve.getPointAt(progress);
+            particle2.current.position.copy(point);
+            const scale = (0.045 + Math.sin(t * 4.5 + 2) * 0.01) * (isActive ? 1.5 : 1.0);
+            particle2.current.scale.set(scale, scale, scale);
+        }
+
+        // Particle 3
+        if (particle3.current) {
+            const progress = (t * speed + 0.66) % 1.0;
+            const point = curve.getPointAt(progress);
+            particle3.current.position.copy(point);
+            const scale = (0.045 + Math.sin(t * 4.5 + 4) * 0.01) * (isActive ? 1.5 : 1.0);
+            particle3.current.scale.set(scale, scale, scale);
+        }
+    });
+
+    return (
+        <group>
+            <mesh ref={particle1}>
+                <sphereGeometry args={[1, 16, 16]} />
+                <meshBasicMaterial color={color} transparent opacity={0.95} />
+            </mesh>
+            <mesh ref={particle2}>
+                <sphereGeometry args={[1, 16, 16]} />
+                <meshBasicMaterial color={color} transparent opacity={0.75} />
+            </mesh>
+            <mesh ref={particle3}>
+                <sphereGeometry args={[1, 16, 16]} />
+                <meshBasicMaterial color={color} transparent opacity={0.75} />
+            </mesh>
+        </group>
+    );
+}
+
+function FlowLine3D({ angle, color, isActive }) {
+    const curve = useMemo(() => {
+        const startRad = 2.8;
+        const p0 = new THREE.Vector3(Math.sin(angle) * startRad, -0.98, Math.cos(angle) * startRad);
+        const p1 = new THREE.Vector3(Math.sin(angle) * 0.8, -0.98, Math.cos(angle) * 0.8);
+        const p2 = new THREE.Vector3(Math.sin(angle) * 0.3, -0.6, Math.cos(angle) * 0.3);
+        const p3 = new THREE.Vector3(0, 0.3, 0); // goes into floating logo
+        return new THREE.CatmullRomCurve3([p0, p1, p2, p3]);
+    }, [angle]);
+
+    return (
+        <group>
+            <mesh>
+                <tubeGeometry args={[curve, 64, 0.008, 8, false]} />
+                <meshBasicMaterial color={color} transparent opacity={isActive ? 0.35 : 0.08} depthWrite={false} />
+            </mesh>
+            <FlowParticles curve={curve} color={color} isActive={isActive} />
+        </group>
+    );
+}
+
 function PowerHubScene({ activeService }) {
     const platformRef = useRef();
     const rimRef1 = useRef();
@@ -484,11 +560,18 @@ function PowerHubScene({ activeService }) {
             <pointLight position={[0, -2, 0]} color="#7c3aed" intensity={2} distance={6} />
 
             {/* Ground pipes extending from pedestal */}
-            <GroundPipe angle={-3 * Math.PI / 4} color="#a855f7" isActive={activeService === 'apps'} /> {/* Power Apps */}
+            <GroundPipe angle={-3 * Math.PI / 4} color="#3b82f6" isActive={activeService === 'apps'} /> {/* Power Apps */}
             <GroundPipe angle={-Math.PI / 4} color="#f97316" isActive={activeService === 'bi'} />     {/* Power BI */}
-            <GroundPipe angle={3 * Math.PI / 4} color="#60a5fa" isActive={activeService === 'automate'} />  {/* Power Automate */}
-            <GroundPipe angle={Math.PI / 2} color="#ec4899" isActive={activeService === 'copilot'} />       {/* Copilot Studio */}
-            <GroundPipe angle={Math.PI / 4} color="#22d3ee" isActive={activeService === 'dataverse'} />       {/* Dataverse */}
+            <GroundPipe angle={3 * Math.PI / 4} color="#0ea5e9" isActive={activeService === 'automate'} />  {/* Power Automate */}
+            <GroundPipe angle={Math.PI / 2} color="#a855f7" isActive={activeService === 'copilot'} />       {/* Copilot Studio */}
+            <GroundPipe angle={Math.PI / 4} color="#10b981" isActive={activeService === 'dataverse'} />       {/* Dataverse */}
+
+            {/* 3D Curved Data Flow Lines and Particles */}
+            <FlowLine3D angle={-3 * Math.PI / 4} color="#3b82f6" isActive={activeService === 'apps'} />
+            <FlowLine3D angle={-Math.PI / 4} color="#f97316" isActive={activeService === 'bi'} />
+            <FlowLine3D angle={3 * Math.PI / 4} color="#0ea5e9" isActive={activeService === 'automate'} />
+            <FlowLine3D angle={Math.PI / 2} color="#a855f7" isActive={activeService === 'copilot'} />
+            <FlowLine3D angle={Math.PI / 4} color="#10b981" isActive={activeService === 'dataverse'} />
 
             {/* Platform base */}
             <group ref={platformRef} position={[0, -0.9, 0]}>
@@ -816,13 +899,13 @@ function ServiceCard({ title, tagline, color, accentColor, bullets, MockupCompon
 }
 
 // ─── Connection Lines SVG ─────────────────────────────────────────────────────
-function ConnectionLines({ paths }) {
+function ConnectionLines({ paths, activeService }) {
     const lines = [
-        { id: 'grad1', path: paths.apps, color: "#a855f7", cls: "pp-flow1", dur: "3s" },
-        { id: 'grad2', path: paths.automate, color: "#60a5fa", cls: "pp-flow2", dur: "2.5s" },
-        { id: 'grad3', path: paths.bi, color: "#f472b6", cls: "pp-flow3", dur: "3.5s" },
-        { id: 'grad4', path: paths.dataverse, color: "#22d3ee", cls: "pp-flow4", dur: "2.8s" },
-        { id: 'grad5', path: paths.copilot, color: "#fb923c", cls: "pp-flow5", dur: "4s" },
+        { id: 'grad1', key: 'apps', path: paths.apps, color: "#3b82f6", cls: "pp-flow1", dur: "3s" },
+        { id: 'grad2', key: 'automate', path: paths.automate, color: "#0ea5e9", cls: "pp-flow2", dur: "2.5s" },
+        { id: 'grad3', key: 'bi', path: paths.bi, color: "#f97316", cls: "pp-flow3", dur: "3.5s" },
+        { id: 'grad4', key: 'dataverse', path: paths.dataverse, color: "#10b981", cls: "pp-flow4", dur: "2.8s" },
+        { id: 'grad5', key: 'copilot', path: paths.copilot, color: "#a855f7", cls: "pp-flow5", dur: "4s" },
     ];
 
     const activeLines = lines.filter(l => l.path);
@@ -836,11 +919,11 @@ function ConnectionLines({ paths }) {
                 </filter>
                 {/* Animated gradients */}
                 {[
-                    { id: 'grad1', c1: '#7c3aed', c2: '#a855f7' },
-                    { id: 'grad2', c1: '#2563eb', c2: '#60a5fa' },
-                    { id: 'grad3', c1: '#ec4899', c2: '#f472b6' },
-                    { id: 'grad4', c1: '#06b6d4', c2: '#22d3ee' },
-                    { id: 'grad5', c1: '#f97316', c2: '#fb923c' },
+                    { id: 'grad1', c1: '#2563eb', c2: '#3b82f6' },
+                    { id: 'grad2', c1: '#0ea5e9', c2: '#06b6d4' },
+                    { id: 'grad3', c1: '#f59e0b', c2: '#f97316' },
+                    { id: 'grad4', c1: '#0f766e', c2: '#14b8a6' },
+                    { id: 'grad5', c1: '#7c3aed', c2: '#a855f7' },
                 ].map(g => (
                     <linearGradient key={g.id} id={g.id} x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor={g.c1} />
@@ -864,26 +947,50 @@ function ConnectionLines({ paths }) {
             </defs>
 
             {/* Static dashed flow lines */}
-            {activeLines.map((line) => (
-                <path
-                    key={line.id}
-                    d={line.path}
-                    fill="none"
-                    stroke={`url(#${line.id})`}
-                    strokeWidth="2"
-                    strokeDasharray="10,6"
-                    className={line.cls}
-                    filter="url(#pp-glow)"
-                    opacity="0.8"
-                />
-            ))}
+            {activeLines.map((line) => {
+                const isActive = activeService === line.key;
+                const isAnyActive = activeService !== null;
+                const opacity = isAnyActive ? (isActive ? 1.0 : 0.15) : 0.7;
+                const strokeWidth = isActive ? 3 : 2;
+                return (
+                    <path
+                        key={line.id}
+                        d={line.path}
+                        fill="none"
+                        stroke={`url(#${line.id})`}
+                        strokeWidth={strokeWidth}
+                        strokeDasharray="10,6"
+                        className={line.cls}
+                        filter="url(#pp-glow)"
+                        opacity={opacity}
+                        style={{
+                            transition: 'opacity 0.3s ease, stroke-width 0.3s ease',
+                            animationDuration: isActive ? '1.5s' : undefined
+                        }}
+                    />
+                );
+            })}
 
             {/* Pulsing animated dots */}
-            {activeLines.map((line, i) => (
-                <circle key={i} r="5" fill={line.color} filter="url(#pp-glow)" opacity="0.9">
-                    <animateMotion dur={line.dur} repeatCount="indefinite" path={line.path} />
-                </circle>
-            ))}
+            {activeLines.map((line, i) => {
+                const isActive = activeService === line.key;
+                const isAnyActive = activeService !== null;
+                const opacity = isAnyActive ? (isActive ? 1.0 : 0.1) : 0.8;
+                const radius = isActive ? 7.5 : 4.5;
+                const dur = isActive ? `${parseFloat(line.dur) / 2}s` : line.dur;
+                return (
+                    <circle 
+                        key={i} 
+                        r={radius} 
+                        fill={line.color} 
+                        filter="url(#pp-glow)" 
+                        opacity={opacity}
+                        style={{ transition: 'opacity 0.3s ease, r 0.3s ease' }}
+                    >
+                        <animateMotion dur={dur} repeatCount="indefinite" path={line.path} />
+                    </circle>
+                );
+            })}
         </svg>
     );
 }
@@ -1115,7 +1222,7 @@ export default function PowerPlatformService() {
                     <div ref={centerZoneRef} className="col-span-12 lg:col-span-9 relative">
                         {/* Connection lines overlay */}
                         <div className="absolute inset-0 z-10 pointer-events-none">
-                            <ConnectionLines paths={linePaths} />
+                            <ConnectionLines paths={linePaths} activeService={activeService} />
                         </div>
 
                         {/* Service cards grid */}
