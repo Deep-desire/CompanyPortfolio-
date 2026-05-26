@@ -18,15 +18,9 @@ function App() {
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
 
   useEffect(() => {
-    // Initialize dark mode based on local storage or system preference
-    const isDark = localStorage.getItem('theme') !== 'light';
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    // Force light mode
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
   }, []);
 
   return (

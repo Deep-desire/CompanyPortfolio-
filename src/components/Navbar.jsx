@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Hexagon, Sun, Moon } from 'lucide-react';
+import { Menu, X, Hexagon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const navLinks = [
@@ -13,7 +13,6 @@ const navLinks = [
 export default function Navbar({ activeHeroIndex = 0 }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,24 +20,8 @@ export default function Navbar({ activeHeroIndex = 0 }) {
     };
     window.addEventListener('scroll', handleScroll);
 
-    // Check initial theme
-    const theme = localStorage.getItem('theme');
-    setIsDark(theme !== 'light');
-
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      setIsDark(false);
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      setIsDark(true);
-    }
-  };
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-card py-3 shadow-lg shadow-black/5 dark:shadow-black/20' : 'bg-transparent py-5'}`}>
@@ -74,18 +57,6 @@ export default function Navbar({ activeHeroIndex = 0 }) {
             </a>
           ))}
 
-          <button
-            onClick={toggleTheme}
-            className={`p-2 rounded-full transition-colors ${
-              (activeHeroIndex === 2 || activeHeroIndex === 0) && !isScrolled
-                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20'
-            }`}
-            aria-label="Toggle Theme"
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-
           <motion.a
             href="#contact"
             whileHover={{ scale: 1.05 }}
@@ -98,16 +69,6 @@ export default function Navbar({ activeHeroIndex = 0 }) {
 
         {/* Mobile Menu Toggle & Theme */}
         <div className="flex items-center gap-4 md:hidden">
-          <button
-            onClick={toggleTheme}
-            className={`p-2 rounded-full transition-colors ${
-              (activeHeroIndex === 2 || activeHeroIndex === 0) && !isScrolled
-                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300'
-            }`}
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
           <button
             className={`transition-colors ${
               (activeHeroIndex === 2 || activeHeroIndex === 0) && !isScrolled

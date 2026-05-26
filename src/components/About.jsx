@@ -52,17 +52,9 @@ function CountUp({ end, duration = 2000, suffix = "" }) {
 
 export default function About() {
   const sectionRef = useRef(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const isDarkMode = false;
 
   useEffect(() => {
-    // Detect theme switches dynamically
-    const checkDarkMode = () => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
-    };
-    checkDarkMode();
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
     // GSAP Scroll Animations
     const ctx = gsap.context(() => {
       gsap.from('.about-panel-left', {
@@ -91,7 +83,6 @@ export default function About() {
     }, sectionRef);
 
     return () => {
-      observer.disconnect();
       ctx.revert();
     };
   }, []);
