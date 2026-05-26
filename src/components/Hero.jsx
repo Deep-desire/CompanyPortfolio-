@@ -5,12 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import gsap from 'gsap';
 import * as d3 from 'd3';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, EffectFade } from 'swiper/modules';
 
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/effect-fade';
 
 import { cn } from '../lib/utils';
 import ThreeScene from './ThreeScene';
@@ -913,181 +908,25 @@ function OfficeEcosystemCenterpiece() {
 
 // --- Main Hero Component ---
 export default function Hero({ onSlideChange }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const swiperRef = useRef(null);
-  const autoplayDelay = 6000;
-
-  // reliable progress timer
   useEffect(() => {
-    let startTime = Date.now();
-    const update = () => {
-      const elapsed = Date.now() - startTime;
-      const p = Math.min(elapsed / autoplayDelay, 1);
-      setProgress(p);
-      if (p < 1) {
-        requestAnimationFrame(update);
-      }
-    };
-    const frame = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(frame);
-  }, [activeIndex]);
+    if (onSlideChange) onSlideChange(2);
+  }, [onSlideChange]);
 
-  // Synchronized GSAP Animations for slide active changes
+  // Synchronized GSAP Animations on mount
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const currentSlide = activeIndex % 3;
-      if (currentSlide === 0) {
-        gsap.fromTo(
-          ".hero-slide-1 > *",
-          { opacity: 0, y: 50 },
-          { opacity: 1, y: 0, duration: 1, stagger: 0.2, ease: 'power3.out', delay: 0.2 }
-        );
-      } else if (currentSlide === 2) {
-        gsap.fromTo(
-          ".hero-slide-3 > *",
-          { opacity: 0, y: 50 },
-          { opacity: 1, y: 0, duration: 1, stagger: 0.2, ease: 'power3.out', delay: 0.2 }
-        );
-      }
+      gsap.fromTo(
+        ".hero-slide-3 > *",
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: 'power3.out', delay: 0.2 }
+      );
     });
     return () => ctx.revert();
-  }, [activeIndex]);
-
-  const handlePaginationClick = (index) => {
-    if (swiperRef.current) {
-      if (swiperRef.current.slideToLoop) {
-        swiperRef.current.slideToLoop(index);
-      } else {
-        swiperRef.current.slideTo(index);
-      }
-    }
-  };
+  }, []);
 
   return (
     <section id="home" className="relative h-screen bg-[#030712] overflow-hidden hero-font">
-      <Swiper
-        onSwiper={(swiper) => {
-          swiperRef.current = swiper;
-        }}
-        onSlideChange={(swiper) => {
-          setActiveIndex(swiper.realIndex);
-          if (onSlideChange) onSlideChange(swiper.realIndex);
-        }}
-        spaceBetween={0}
-        effect={'fade'}
-        fadeEffect={{ crossFade: true }}
-        speed={1500}
-        allowTouchMove={false}
-        autoplay={false}
-        loop={false}
-        modules={[EffectFade]}
-        className="h-full w-full"
-      >
-        {/* Commented out Slide 1 and Slide 2 as requested
-        // Slide 1: Original Brand Identity
-        <SwiperSlide>
-          <div className="relative h-full w-full flex items-center justify-center">
-            {activeIndex % 3 === 0 && <ThreeScene />}
-
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyan-500/[0.08] rounded-full blur-[150px] pointer-events-none" />
-
-            <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
-              <div className="hero-slide-1 text-left space-y-8 max-w-2xl">
-                <div>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="inline-block px-5 py-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 text-cyan-400 text-xs font-black mb-8 backdrop-blur-md uppercase tracking-[0.3em]"
-                  >
-                    Future-Ready Digital Solutions
-                  </motion.div>
-                  <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none text-white">
-                    Architecting <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
-                      Digital Frontier.
-                    </span>
-                  </h1>
-                </div>
-
-                <p className="text-lg md:text-xl text-gray-400 leading-relaxed max-w-xl font-medium">
-                  Desire Info Web builds high-performance, intelligent, and scalable web experiences that empower businesses to lead in a technology-driven world.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-6">
-                  <a href="#portfolio" className="group relative px-10 py-5 bg-white text-gray-950 font-black rounded-full overflow-hidden flex items-center justify-center gap-2 hover:scale-105 transition-all duration-500 shadow-xl">
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <span className="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors uppercase tracking-widest font-black">
-                      View Our Work <ArrowRight size={20} />
-                    </span>
-                  </a>
-                  <a href="#contact" className="px-10 py-5 bg-transparent border-2 border-white/10 hover:border-white text-white font-bold rounded-full flex items-center justify-center transition-all hover:bg-white/5 uppercase tracking-widest">
-                    Contact Us
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </SwiperSlide>
-
-        // Slide 2: Global Connectivity & Desire InfoWeb
-        <SwiperSlide>
-          <div className="relative h-full w-full flex flex-col items-center justify-center">
-            // Immersive Space Effects
-            <StarField count={250} />
-
-            <div className="absolute inset-0 opacity-15 pointer-events-none">
-              <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent" />
-              <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent" />
-            </div>
-
-            <div className="container mx-auto px-6 relative z-10 h-full flex flex-col items-center justify-center">
-              <div className="relative w-full max-w-6xl flex flex-col items-center justify-center">
-                // 3D Earth - Increased Size & Pulse Animation
-                <motion.div
-                  animate={{
-                    scale: [1, 1.02, 1],
-                    filter: ["drop-shadow(0 0 40px rgba(6,182,212,0.2))", "drop-shadow(0 0 60px rgba(6,182,212,0.4))", "drop-shadow(0 0 40px rgba(6,182,212,0.2))"]
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                >
-                  {activeIndex % 3 === 1 && (
-                    <RotatingEarth width={900} height={800} className="opacity-90 scale-90 md:scale-100 translate-y-12" />
-                  )}
-                </motion.div>
-
-                // Text Overlay - Synchronized with Earth position
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20 translate-y-12">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8, y: 40 }}
-                    whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    className="space-y-6 text-center"
-                  >
-                    <h2 className="text-7xl md:text-[150px] font-black tracking-tighter text-white drop-shadow-[0_0_60px_rgba(6,182,212,0.6)] uppercase leading-none italic">
-                      DESIRE <span className="text-cyan-500">INFOWEB</span>
-                    </h2>
-                    <div className="flex items-center justify-center gap-6">
-                      <div className="h-px w-20 bg-cyan-500/30" />
-                      <p className="text-cyan-400 font-black tracking-[1.5em] text-[10px] md:text-xs uppercase">
-                        3D Graphical Information Architecture
-                      </p>
-                      <div className="h-px w-20 bg-cyan-500/30" />
-                    </div>
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </SwiperSlide>
-        */}
-
         {/* Slide 3: Clean White Premium Technology Partner */}
-        <SwiperSlide>
           <div className="relative h-full w-full bg-gradient-to-br from-[#fdfdff] via-[#f7f5ff] to-[#fdfdff] dark:from-[#030712] dark:via-[#090d16] dark:to-[#030712] flex flex-col justify-between pt-2 pb-2 px-2 lg:pt-2 lg:pb-3 lg:px-4 overflow-y-auto lg:overflow-hidden select-none transition-colors duration-500">
             {/* Glowing background circles to match the image */}
             <div className="absolute top-1/3 left-0 w-[450px] h-[450px] bg-pink-400/[0.12] dark:bg-pink-500/[0.15] rounded-full blur-[120px] pointer-events-none" />
@@ -1111,7 +950,7 @@ export default function Hero({ onSlideChange }) {
 
               {/* Centered Brand Logo and Title */}
               <div className="flex items-center justify-center gap-3 md:gap-4 hover:scale-101 transition-transform duration-300">
-                <img src="/image (2).png" alt="DesireInfoWeb Logo" className="w-14 h-14 md:w-18 md:h-18 lg:w-20 lg:h-20 object-contain filter drop-shadow-sm" />
+                <img src="/logo.png" alt="DesireInfoWeb Logo" className="w-14 h-14 md:w-18 md:h-18 lg:w-20 lg:h-20 object-contain filter drop-shadow-sm" />
                 <span className="text-3xl md:text-4xl lg:text-5xl font-black text-[#2e1065] dark:text-white tracking-tight transition-colors duration-500">DesireInfoWeb</span>
               </div>
 
@@ -1136,7 +975,7 @@ export default function Hero({ onSlideChange }) {
                 {/* Microsoft 365 Card */}
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
-                  animate={(activeIndex === 0 || activeIndex % 3 === 2) ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.1 }}
                   className="
                     relative overflow-hidden
@@ -1238,7 +1077,7 @@ export default function Hero({ onSlideChange }) {
                 </motion.div>                {/* SharePoint Card */}
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
-                  animate={(activeIndex === 0 || activeIndex % 3 === 2) ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                   className="
                     relative overflow-hidden
@@ -1299,7 +1138,7 @@ export default function Hero({ onSlideChange }) {
                 {/* AI Innovation Card */}
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
-                  animate={(activeIndex === 0 || activeIndex % 3 === 2) ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
                   className="
                     relative overflow-hidden
@@ -1360,7 +1199,7 @@ export default function Hero({ onSlideChange }) {
               </div>
 
               {/* Center Column */}
-              <div className="lg:col-span-6 flex flex-col items-center justify-center text-center px-4 space-y-3 lg:space-y-3.5">
+              <div className="hero-slide-3 lg:col-span-6 flex flex-col items-center justify-center text-center px-4 space-y-3 lg:space-y-3.5">
 
 
                 <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] pb-1 transition-colors duration-500 text-center">
@@ -1455,7 +1294,7 @@ export default function Hero({ onSlideChange }) {
                 {/* Azure Cloud Card */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
-                  animate={(activeIndex === 0 || activeIndex % 3 === 2) ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.1 }}
                   className="
                     relative overflow-hidden
@@ -1489,7 +1328,7 @@ export default function Hero({ onSlideChange }) {
                 {/* Power Platform Card */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
-                  animate={(activeIndex === 0 || activeIndex % 3 === 2) ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                   className="
                     relative overflow-hidden
@@ -1535,7 +1374,7 @@ export default function Hero({ onSlideChange }) {
                 {/* Dynamics 365 Card */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
-                  animate={(activeIndex === 0 || activeIndex % 3 === 2) ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
                   className="
                     relative overflow-hidden
@@ -1694,76 +1533,6 @@ export default function Hero({ onSlideChange }) {
 
             </div>
           </div>
-        </SwiperSlide>
-      </Swiper>
-
-      {/* Commented out the Swiper pagination indicators since only one slide is active
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-8 md:gap-12">
-        {[0, 1, 2].map((index) => {
-          const activeModulo = activeIndex % 3;
-          const isCompleted = index < activeModulo;
-          const isActuallyActive = activeModulo === index;
-
-          return (
-            <button
-              key={index}
-              onClick={() => handlePaginationClick(index)}
-              className="group flex flex-col gap-4 cursor-pointer outline-none focus:ring-0"
-            >
-              <div className={cn(
-                "relative w-24 md:w-36 h-1 rounded-full overflow-hidden transition-colors duration-500",
-                activeModulo === 2 ? "bg-slate-200" : "bg-white/10"
-              )}>
-                <div
-                  className={cn(
-                    "absolute inset-0 transition-opacity duration-500",
-                    isActuallyActive ? (activeModulo === 2 ? "bg-slate-300/30" : "bg-white/5") : "opacity-0"
-                  )}
-                />
-                <motion.div
-                  className={cn(
-                    "absolute inset-y-0 left-0 rounded-full transition-colors duration-500",
-                    activeModulo === 2 
-                      ? "bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.4)]" 
-                      : "bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.5)]"
-                  )}
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: isActuallyActive ? `${progress * 100}%` : (isCompleted ? "100%" : "0%")
-                  }}
-                  transition={{ type: "tween", ease: "linear" }}
-                />
-              </div>
-              <div className="flex items-center justify-between px-2">
-                <span className={cn(
-                  "text-[10px] font-black tracking-[0.4em] uppercase transition-all duration-500",
-                  isActuallyActive 
-                    ? (activeModulo === 2 ? "text-indigo-600 scale-110" : "text-cyan-400 scale-110")
-                    : (activeModulo === 2 ? "text-slate-400" : "text-gray-600")
-                )}>
-                  0{index + 1}
-                </span>
-                <div className={cn(
-                  "flex items-center gap-2 transition-all duration-500",
-                  isActuallyActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-                )}>
-                  <div className={cn(
-                    "w-1 h-1 rounded-full animate-pulse transition-colors duration-500",
-                    activeModulo === 2 ? "bg-indigo-600" : "bg-cyan-400"
-                  )} />
-                  <span className={cn(
-                    "text-[8px] font-black tracking-[0.2em] uppercase transition-all duration-500",
-                    activeModulo === 2 ? "text-indigo-600/70" : "text-cyan-400/60"
-                  )}>
-                    Active
-                  </span>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-      */}
     </section>
   );
 }

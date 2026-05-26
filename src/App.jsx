@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import Hero from './components/Hero';
 import About from './components/About';
 import Services from './components/Services';
+import AIservice from './components/AIservice';
+import PowerPlatformService from './components/powerplatformservice';
+import Dynamicservice from './components/Dynamicservice';
 import Projects from './components/Projects';
 import TechStack from './components/TechStack';
 import MeetPeople from './components/MeetPeople';
@@ -33,6 +36,9 @@ function App() {
         <Hero onSlideChange={setActiveHeroIndex} />
         <About />
         <Services />
+        <AIservice />
+        <PowerPlatformService />
+        <Dynamicservice />
         <Projects />
         <TechStack />
         <MeetPeople />

@@ -1,0 +1,1023 @@
+diff --git a/src/components/About.jsx b/src/components/About.jsx
+index ec01e66..df9a408 100644
+--- a/src/components/About.jsx
++++ b/src/components/About.jsx
+@@ -1,18 +1,21 @@
+-import { useEffect, useRef, useState } from 'react';
++import { useEffect, useRef, useState, useMemo } from 'react';
+ import { motion } from 'motion/react';
+ import gsap from 'gsap';
+ import { ScrollTrigger } from 'gsap/ScrollTrigger';
+-import { 
+-  Target, 
+-  Eye, 
+-  Globe, 
+-  Award, 
+-  Users, 
+-  Briefcase, 
+-  Shield, 
+-  Lightbulb, 
++import {
++  Target,
++  Eye,
++  Globe,
++  Award,
++  Users,
++  Briefcase,
++  Shield,
++  Lightbulb,
+   MapPin
+ } from 'lucide-react';
++import { Canvas, useFrame } from '@react-three/fiber';
++import { Html } from '@react-three/drei';
++import * as THREE from 'three';
+ 
+ gsap.registerPlugin(ScrollTrigger);
+ 
+@@ -50,18 +53,6 @@ function CountUp({ end, duration = 2000, suffix = "" }) {
+   return <span ref={elementRef}>{count}{suffix}</span>;
+ }
+ 
+-const MAP_PATHS = {
+-  northAmerica: "M100,80 C110,60 130,40 160,35 C180,30 200,45 220,40 C240,35 250,20 260,30 C275,40 260,75 270,90 C280,105 295,100 280,115 C265,130 245,120 235,135 C220,150 200,180 190,195 C175,190 160,185 150,175 C140,165 110,160 100,140 C90,120 85,95 100,80 Z",
+-  southAmerica: "M190,195 C205,195 220,210 235,230 C250,250 255,280 240,320 C230,340 220,350 215,350 C210,340 215,310 205,290 C195,270 180,240 175,220 C175,210 185,200 190,195 Z",
+-  greenland: "M180,20 C205,25 215,45 190,55 C175,50 165,30 180,20 Z",
+-  africa: "M335,160 C360,150 380,155 405,165 C425,175 435,200 425,230 C415,260 400,290 385,310 C375,315 370,295 375,280 C360,255 340,240 335,220 C330,200 325,180 335,160 Z",
+-  eurasia: "M285,95 C295,75 320,65 340,55 C370,40 430,35 490,30 C540,35 570,40 580,60 C570,80 590,100 600,115 C590,135 565,150 550,140 C535,155 530,175 515,185 C510,175 495,170 480,185 C470,170 460,195 C450,180 440,165 420,165 C410,155 395,160 385,150 C365,155 355,145 345,145 C335,140 325,150 320,130 C305,135 295,115 285,95 Z",
+-  australia: "M535,250 C565,240 585,255 580,280 C565,295 540,285 535,250 Z",
+-  madagascar: "M435,265 C445,260 440,285 430,290 Z",
+-  japan: "M585,90 C590,95 585,110 580,115 Z",
+-  newZealand: "M595,300 C605,295 600,315 595,310 Z",
+-  uk: "M290,75 C295,70 290,85 285,85 Z"
+-};
+ 
+ export default function About() {
+   const sectionRef = useRef(null);
+@@ -100,17 +91,7 @@ export default function About() {
+         ease: 'power2.out'
+       });
+ 
+-      gsap.from('.value-card', {
+-        scrollTrigger: {
+-          trigger: '.values-container',
+-          start: 'top 85%',
+-        },
+-        y: 25,
+-        opacity: 0,
+-        duration: 0.6,
+-        stagger: 0.1,
+-        ease: 'power2.out'
+-      });
++      // Value cards animate smoothly with the parent about-panel-left
+     }, sectionRef);
+ 
+     return () => {
+@@ -119,38 +100,58 @@ export default function About() {
+     };
+   }, []);
+ 
+-  const mapFill = isDarkMode ? "url(#mapGradDark)" : "url(#mapGradLight)";
+-  const mapStroke = isDarkMode ? "#c084fc" : "#8b5cf6";
+-  const extrusionFill = isDarkMode ? "#2e1065" : "#4c1d95";
+ 
+-  const locations = [
+-    { country: "Canada", city: "Toronto, ON", office: "Office", x: "21.5%", y: "29.7%", isHQ: false },
+-    { country: "USA", city: "New York, NY", office: "Office", x: "24.6%", y: "35.1%", isHQ: false },
+-    { country: "Europe", city: "London, UK", office: "Office", x: "49.2%", y: "25.6%", isHQ: false },
+-    { country: "India", city: "Ahmedabad (HQ)", office: "Mumbai | Pune Offices", x: "72.3%", y: "47.3%", isHQ: true },
+-    { country: "South Africa", city: "Cape Town", office: "Office", x: "60.8%", y: "77.0%", isHQ: false },
+-    { country: "Australia", city: "Melbourne", office: "Office", x: "89.2%", y: "77.0%", isHQ: false }
+-  ];
++  const handleCardMouseMove = (e) => {
++    const card = e.currentTarget;
++    const box = card.getBoundingClientRect();
++    const x = e.clientX - box.left;
++    const y = e.clientY - box.top;
++    const centerX = box.width / 2;
++    const centerY = box.height / 2;
++
++    // Rotate values based on distance from center
++    const rotateX = -(y - centerY) / 6;
++    const rotateY = (x - centerX) / 6;
++
++    card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.04, 1.04, 1.04)`;
++
++    const shine = card.querySelector('.card-shine');
++    if (shine) {
++      shine.style.left = `${x}px`;
++      shine.style.top = `${y}px`;
++      shine.style.opacity = '1';
++    }
++  };
++
++  const handleCardMouseLeave = (e) => {
++    const card = e.currentTarget;
++    card.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
++
++    const shine = card.querySelector('.card-shine');
++    if (shine) {
++      shine.style.opacity = '0';
++    }
++  };
+ 
+   return (
+-    <section 
+-      id="about" 
+-      ref={sectionRef} 
+-      className="relative min-h-screen overflow-hidden bg-[#f8f2ff] dark:bg-[#030208] px-4 md:px-6 pt-16 pb-24 transition-colors duration-500 select-none flex flex-col justify-center gap-8"
++    <section
++      id="about"
++      ref={sectionRef}
++      className="relative min-h-screen overflow-hidden bg-[#f8f2ff] dark:bg-[#030208] px-4 md:px-6 pt-12 pb-12 transition-colors duration-500 select-none flex flex-col justify-center gap-8"
+     >
+       {/* Background glow and animations */}
+       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,78,203,0.14),transparent_40%),radial-gradient(circle_at_80%_30%,rgba(91,44,255,0.16),transparent_40%)] dark:bg-[radial-gradient(circle_at_20%_20%,rgba(255,78,203,0.08),transparent_45%),radial-gradient(circle_at_80%_30%,rgba(91,44,255,0.1),transparent_45%)]" />
+ 
+ 
+       <div className="relative mx-auto grid max-w-[1500px] grid-cols-1 gap-6 lg:grid-cols-[0.43fr_0.57fr] items-stretch">
+-        
++
+         {/* Left Div — Company Overview Panel */}
+         <div className="about-panel-left relative rounded-[40px] border border-white/80 dark:border-white/10 bg-white/65 dark:bg-[#120c24]/50 p-6 md:p-9 shadow-[0_30px_90px_rgba(91,44,255,0.12)] dark:shadow-[0_30px_90px_rgba(168,85,247,0.06)] backdrop-blur-2xl flex flex-col justify-between overflow-hidden">
+-          
++
+           <div className="space-y-6">
+             {/* Logo and Brand Title */}
+             <div className="flex items-center gap-3">
+-              <img src="/image (2).png" alt="DesireInfoWeb Logo" className="w-14 h-14 object-contain filter drop-shadow-sm" />
++              <img src="/logo.png" alt="DesireInfoWeb Logo" className="w-14 h-14 object-contain filter drop-shadow-sm" />
+               <div>
+                 <span className="block text-2xl md:text-3xl font-black text-[#2e1065] dark:text-white tracking-tight leading-none">DesireInfoWeb</span>
+                 <span className="block text-[10px] md:text-[11px] font-black bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 dark:from-pink-400 dark:via-purple-400 dark:to-indigo-400 uppercase tracking-widest mt-1.5 whitespace-nowrap">Your Extended Technology Partner</span>
+@@ -233,8 +234,8 @@ export default function About() {
+                   )
+                 }
+               ].map((tech) => (
+-                <div 
+-                  key={tech.name} 
++                <div
++                  key={tech.name}
+                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/40 dark:bg-slate-900/40 border border-white/50 dark:border-white/5 shadow-xs hover:scale-105 transition-all duration-300 cursor-pointer"
+                 >
+                   {tech.icon}
+@@ -284,20 +285,24 @@ export default function About() {
+ 
+             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+               {[
+-                { title: "Client Success First", desc: "Your goals drive us.", icon: <Users className="w-4 h-4" /> },
+-                { title: "Innovation Always", desc: "Pushing boundaries.", icon: <Lightbulb className="w-4 h-4" /> },
+-                { title: "Integrity & Excellence", desc: "Quality in every line.", icon: <Shield className="w-4 h-4" /> },
+-                { title: "Global Mindset Local Impact", desc: "Smarter remote teamwork.", icon: <Globe className="w-4 h-4" /> }
++                { title: "Client Success First", icon: <Users className="w-5 h-5" /> },
++                { title: "Innovation Always", icon: <Lightbulb className="w-5 h-5" /> },
++                { title: "Integrity & Excellence", icon: <Shield className="w-5 h-5" /> },
++                { title: "Global Mindset Local Impact", icon: <Globe className="w-5 h-5" /> }
+               ].map((val, idx) => (
+-                <div 
+-                  key={idx} 
+-                  className="value-card rounded-2xl p-2.5 bg-white/40 dark:bg-slate-900/30 border border-white/60 dark:border-white/5 shadow-xs text-center flex flex-col justify-between hover:scale-[1.03] transition-all duration-300"
++                <div
++                  key={idx}
++                  className="value-card rounded-3xl p-4 bg-white/80 dark:bg-[#1a0f30]/60 border border-purple-200/80 dark:border-purple-900/40 shadow-xs text-center flex flex-col items-center justify-center gap-2 hover:scale-[1.05] hover:shadow-md transition-all duration-200 cursor-pointer group relative overflow-hidden"
++                  style={{ transformStyle: 'preserve-3d' }}
++                  onMouseMove={handleCardMouseMove}
++                  onMouseLeave={handleCardMouseLeave}
+                 >
+-                  <div className="w-6 h-6 mx-auto mb-1.5 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
++                  <div className="card-shine absolute -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.25)_0%,transparent_70%)] dark:bg-[radial-gradient(circle,rgba(255,255,255,0.12)_0%,transparent_70%)] opacity-0 pointer-events-none transition-opacity duration-300 z-0" />
++
++                  <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 z-10 transition-all duration-300" style={{ transform: 'translateZ(25px)' }}>
+                     {val.icon}
+                   </div>
+-                  <h5 className="text-[9px] font-black text-slate-900 dark:text-slate-100 leading-tight">{val.title}</h5>
+-                  <p className="text-[8px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">{val.desc}</p>
++                  <h5 className="text-[10px] md:text-xs font-black text-[#2e1065] dark:text-purple-200 leading-tight z-10" style={{ transform: 'translateZ(15px)' }}>{val.title}</h5>
+                 </div>
+               ))}
+             </div>
+@@ -311,7 +316,7 @@ export default function About() {
+                     <stop offset="0%" stopColor="rgba(139, 92, 246, 0.05)" />
+                     <stop offset="100%" stopColor="rgba(139, 92, 246, 0.2)" />
+                   </linearGradient>
+-                  
++
+                   {/* Purple Building */}
+                   <linearGradient id="purpLight" x1="0" y1="1" x2="0" y2="0">
+                     <stop offset="0%" stopColor="#a855f7" />
+@@ -404,12 +409,11 @@ export default function About() {
+             </div>
+           </div>
+         </div>
+-
+         {/* Right Div — Global Presence Panel */}
+         <div className="about-panel-right relative rounded-[40px] border border-white/80 dark:border-white/10 bg-white/65 dark:bg-[#120c24]/50 p-6 md:p-9 shadow-[0_30px_90px_rgba(91,44,255,0.12)] dark:shadow-[0_30px_90px_rgba(168,85,247,0.06)] backdrop-blur-2xl flex flex-col justify-between overflow-hidden">
+-          
++
+           <div className="space-y-4">
+-            {/* Header: Title & Subtitle */}
++            {/* Header: Title & Subtitle + 25+ Countries Card */}
+             <div className="flex items-center justify-between gap-4">
+               <div>
+                 <h3 className="text-3xl md:text-4xl font-black text-[#2e1065] dark:text-slate-100 tracking-tight leading-none">
+@@ -417,13 +421,8 @@ export default function About() {
+                 </h3>
+                 <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-1.5">Delivering Excellence. Worldwide.</p>
+               </div>
+-            </div>
+-
+-            {/* Glowing 2.5D World Map */}
+-            <div className="relative w-full overflow-x-auto scrollbar-hide bg-purple-500/[0.02] dark:bg-purple-900/[0.02] rounded-3xl border border-slate-200/5 py-2 select-none">
+-              <div className="relative min-w-[650px] md:min-w-0 w-full aspect-[650/370]">
+-                {/* 25+ Countries Served floating glass card */}
+-                <div className="absolute top-4 right-4 bg-white/70 dark:bg-slate-950/70 border border-white/90 dark:border-white/10 shadow-[0_8px_32px_rgba(91,44,255,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md rounded-2xl px-4 py-2 flex items-center gap-3 z-35 transition-all duration-300 hover:scale-105 pointer-events-auto">
++              {/* 25+ Countries Served floating glass card */}
++              <div className="flex-shrink-0 bg-white/70 dark:bg-slate-950/75 border border-white/90 dark:border-white/10 shadow-[0_8px_32px_rgba(91,44,255,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md rounded-2xl px-4 py-2 flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)]">
+                   <Globe className="w-4 h-4 animate-spin-slow" />
+                 </div>
+@@ -432,145 +431,15 @@ export default function About() {
+                   <div className="text-[8px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">Countries Served</div>
+                 </div>
+               </div>
++            </div>
+ 
+-              {/* Map SVG */}
+-              <svg viewBox="0 0 650 370" className="w-full h-full filter drop-shadow-[0_12px_24px_rgba(139,92,246,0.15)]">
+-                <defs>
+-                  {/* Map Shading Gradients */}
+-                  <linearGradient id="mapGradLight" x1="0" y1="0" x2="1" y2="1">
+-                    <stop offset="0%" stopColor="#ebdffc" />
+-                    <stop offset="50%" stopColor="#cfb6f6" />
+-                    <stop offset="100%" stopColor="#b58cf2" />
+-                  </linearGradient>
+-                  <linearGradient id="mapGradDark" x1="0" y1="0" x2="1" y2="1">
+-                    <stop offset="0%" stopColor="#311956" />
+-                    <stop offset="50%" stopColor="#251242" />
+-                    <stop offset="100%" stopColor="#180a2c" />
+-                  </linearGradient>
+-                  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="1">
+-                    <stop offset="0%" stopColor="#fb7185" />
+-                    <stop offset="100%" stopColor="#a855f7" />
+-                  </linearGradient>
+-
+-                  <style>{`
+-                    @keyframes mapDash {
+-                      to {
+-                        stroke-dashoffset: -40;
+-                      }
+-                    }
+-                    .connection-line {
+-                      stroke-dasharray: 6, 6;
+-                      animation: mapDash 3s linear infinite;
+-                    }
+-                  `}</style>
+-                </defs>
+-
+-                {/* Grid Overlay */}
+-                <g stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" fill="none">
+-                  {/* Vertical lines */}
+-                  {Array.from({ length: 13 }).map((_, i) => (
+-                    <line key={`v-${i}`} x1={i * 50} y1="0" x2={i * 50} y2="370" />
+-                  ))}
+-                  {/* Horizontal lines */}
+-                  {Array.from({ length: 8 }).map((_, i) => (
+-                    <line key={`h-${i}`} x1="0" y1={i * 50} x2="650" y2={i * 50} />
+-                  ))}
+-                </g>
+-
+-                {/* Extruded 3D/2.5D layer */}
+-                <g fill={extrusionFill} opacity="0.3" transform="translate(0, 4.5)">
+-                  <path d={MAP_PATHS.northAmerica} />
+-                  <path d={MAP_PATHS.southAmerica} />
+-                  <path d={MAP_PATHS.greenland} />
+-                  <path d={MAP_PATHS.eurasia} />
+-                  <path d={MAP_PATHS.africa} />
+-                  <path d={MAP_PATHS.australia} />
+-                  <path d={MAP_PATHS.madagascar} />
+-                  <path d={MAP_PATHS.japan} />
+-                  <path d={MAP_PATHS.newZealand} />
+-                  <path d={MAP_PATHS.uk} />
+-                </g>
+-
+-                {/* Foreground World Outlines */}
+-                <g fill={mapFill} stroke={mapStroke} strokeWidth="1.2" strokeLinejoin="round">
+-                  <path d={MAP_PATHS.northAmerica} className="transition-all duration-500 hover:opacity-90" />
+-                  <path d={MAP_PATHS.southAmerica} className="transition-all duration-500 hover:opacity-90" />
+-                  <path d={MAP_PATHS.greenland} className="transition-all duration-500 hover:opacity-90" />
+-                  <path d={MAP_PATHS.eurasia} className="transition-all duration-500 hover:opacity-90" />
+-                  <path d={MAP_PATHS.africa} className="transition-all duration-500 hover:opacity-90" />
+-                  <path d={MAP_PATHS.australia} className="transition-all duration-500 hover:opacity-90" />
+-                  <path d={MAP_PATHS.madagascar} className="transition-all duration-500 hover:opacity-90" />
+-                  <path d={MAP_PATHS.japan} className="transition-all duration-500 hover:opacity-90" />
+-                  <path d={MAP_PATHS.newZealand} className="transition-all duration-500 hover:opacity-90" />
+-                  <path d={MAP_PATHS.uk} className="transition-all duration-500 hover:opacity-90" />
+-                </g>
+-
+-                {/* Animated Connection Arches from India (HQ) to other locations */}
+-                <g opacity="0.75">
+-                  {/* India (470, 175) to Canada (140, 110) */}
+-                  <path d="M 470,175 Q 305,80 140,110" fill="none" stroke="url(#lineGrad)" strokeWidth="1.5" className="connection-line" />
+-                  {/* India (470, 175) to USA (160, 130) */}
+-                  <path d="M 470,175 Q 315,100 160,130" fill="none" stroke="url(#lineGrad)" strokeWidth="1.5" className="connection-line" />
+-                  {/* India (470, 175) to Europe (320, 95) */}
+-                  <path d="M 470,175 Q 395,90 320,95" fill="none" stroke="url(#lineGrad)" strokeWidth="1.5" className="connection-line" />
+-                  {/* India (470, 175) to South Africa (395, 285) */}
+-                  <path d="M 470,175 Q 430,225 395,285" fill="none" stroke="url(#lineGrad)" strokeWidth="1.5" className="connection-line" />
+-                  {/* India (470, 175) to Australia (580, 285) */}
+-                  <path d="M 470,175 Q 525,225 580,285" fill="none" stroke="url(#lineGrad)" strokeWidth="1.5" className="connection-line" />
+-                </g>
+-              </svg>
++            {/* Glowing 3D World Map Canvas */}
++            <div className="relative w-full h-[400px] md:h-[480px] lg:h-[510px] bg-purple-500/[0.01] dark:bg-purple-900/[0.01] rounded-3xl border border-slate-200/5 select-none overflow-hidden">
++              <ThreeDMap isDarkMode={isDarkMode} />
+ 
+-              {/* HTML Absolute overlays for pins and location cards */}
+-              {locations.map((loc, idx) => (
+-                <div 
+-                  key={idx} 
+-                  style={{ left: loc.x, top: loc.y }} 
+-                  className="absolute -translate-x-1/2 -translate-y-1/2 group z-30"
+-                >
+-                  {/* Pulsing Pin */}
+-                  <div className="relative flex items-center justify-center cursor-pointer">
+-                    {loc.isHQ ? (
+-                      <>
+-                        <div className="absolute w-8 h-8 rounded-full bg-amber-400/20 border border-amber-400/30 animate-ping duration-1500" />
+-                        <div className="absolute w-12 h-12 rounded-full bg-amber-400/10 border border-amber-400/20 animate-ping duration-3000" />
+-                        <div className="w-3.5 h-3.5 rounded-full bg-amber-500 border-2 border-white shadow-[0_0_12px_rgba(245,158,11,0.85)] z-10 transition-transform duration-300 group-hover:scale-125" />
+-                      </>
+-                    ) : (
+-                      <>
+-                        <div className="absolute w-6 h-6 rounded-full bg-purple-500/20 border border-purple-500/30 animate-ping duration-1500" />
+-                        <div className="w-2.5 h-2.5 rounded-full bg-purple-600 dark:bg-purple-400 border-2 border-white dark:border-slate-900 shadow-[0_0_8px_rgba(168,85,247,0.7)] z-10 transition-transform duration-300 group-hover:scale-125" />
+-                      </>
+-                    )}
+-                  </div>
+ 
+-                  {/* Floating location card (always visible, floats slightly on hover) */}
+-                  <div 
+-                    className="
+-                      absolute transform -translate-x-1/2 -translate-y-[122%]
+-                      bg-white/80 dark:bg-slate-950/80
+-                      border border-white/95 dark:border-white/10
+-                      shadow-[0_8px_30px_rgba(91,44,255,0.14)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)]
+-                      backdrop-blur-md rounded-2xl p-2 md:p-2.5 text-left min-w-[130px] md:min-w-[145px]
+-                      transition-all duration-300
+-                      hover:scale-105 group-hover:-translate-y-[126%]
+-                      z-40 pointer-events-auto
+-                      flex items-start gap-1.5 md:gap-2
+-                    "
+-                  >
+-                    <div className={`w-6 h-6 md:w-7 md:h-7 rounded-xl ${loc.isHQ ? 'bg-amber-500/10 text-amber-500 dark:text-amber-400' : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'} flex-shrink-0 flex items-center justify-center mt-0.5`}>
+-                      <MapPin className="w-3.5 h-3.5 fill-current" />
+-                    </div>
+-                    <div className="leading-tight">
+-                      <div className="text-[8px] md:text-[9px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">{loc.country}</div>
+-                      <div className="text-[9px] md:text-[10px] font-bold text-slate-900 dark:text-slate-100 mt-0.5">{loc.city}</div>
+-                      <div className="text-[8px] font-medium text-slate-450 dark:text-slate-450 mt-0.5 leading-none">{loc.office}</div>
+-                    </div>
+-                  </div>
+-                </div>
+-              ))}
+-
+-              {/* Map Legend (Bottom Left of Panel Map) */}
+-              <div className="absolute bottom-3 left-3 bg-white/70 dark:bg-slate-950/70 border border-white/80 dark:border-white/5 shadow-md backdrop-blur-md rounded-2xl p-3 z-30 pointer-events-auto">
++              {/* Map Legend */}
++              <div className="absolute bottom-3 left-3 bg-white/70 dark:bg-slate-950/75 border border-white/80 dark:border-white/5 shadow-md backdrop-blur-md rounded-2xl p-3 z-30">
+                 <h5 className="text-[8px] font-black text-slate-400 uppercase tracking-wider mb-2">Map Legend</h5>
+                 <div className="space-y-1.5 text-[8px] font-bold text-slate-700 dark:text-slate-350">
+                   <div className="flex items-center gap-2">
+@@ -589,28 +458,130 @@ export default function About() {
+               </div>
+             </div>
+           </div>
+-        </div>
+ 
+           {/* Stats Cards at Bottom of Right Panel */}
+-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-slate-200/10 mt-6 z-10">
++          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 pt-6 border-t border-slate-200/10 mt-6 z-10">
+             {[
+-              { end: 1200, label: "Projects Delivered", icon: <Briefcase className="w-4 h-4" /> },
+-              { end: 250, label: "Happy Clients", icon: <Users className="w-4 h-4" /> },
+-              { end: 25, label: "Countries Served", icon: <Globe className="w-4 h-4" /> },
+-              { end: 10, label: "Years of Experience", icon: <Award className="w-4 h-4" /> }
++              {
++                end: 1200,
++                label: "Projects Delivered",
++                icon: (
++                  <svg viewBox="0 0 100 100" className="w-16 h-16 animate-float-slow overflow-visible pointer-events-none">
++                    <defs>
++                      <linearGradient id="cubeTop" x1="0" y1="0" x2="1" y2="1">
++                        <stop offset="0%" stopColor="#fca5a5" />
++                        <stop offset="100%" stopColor="#f43f5e" />
++                      </linearGradient>
++                      <linearGradient id="cubeLeft" x1="0" y1="1" x2="0" y2="0">
++                        <stop offset="0%" stopColor="#be123c" />
++                        <stop offset="100%" stopColor="#e11d48" />
++                      </linearGradient>
++                      <linearGradient id="cubeRight" x1="0" y1="1" x2="0" y2="0">
++                        <stop offset="0%" stopColor="#f43f5e" />
++                        <stop offset="100%" stopColor="#fb7185" />
++                      </linearGradient>
++                    </defs>
++                    <g transform="translate(10, 5)">
++                      <g transform="translate(0, 30)">
++                        <polygon points="40,20 65,30 40,40 15,30" fill="url(#cubeTop)" opacity="0.8" />
++                        <polygon points="15,30 40,40 40,65 15,55" fill="url(#cubeLeft)" opacity="0.8" />
++                        <polygon points="40,40 65,30 65,55 40,65" fill="url(#cubeRight)" opacity="0.8" />
++                      </g>
++                      <g transform="translate(0, 5) scale(0.9)">
++                        <polygon points="40,20 65,30 40,40 15,30" fill="url(#cubeTop)" />
++                        <polygon points="15,30 40,40 40,65 15,55" fill="url(#cubeLeft)" />
++                        <polygon points="40,40 65,30 65,55 40,65" fill="url(#cubeRight)" />
++                        <line x1="40" y1="40" x2="40" y2="65" stroke="#ffe4e6" strokeWidth="1" opacity="0.5" />
++                      </g>
++                    </g>
++                  </svg>
++                )
++              },
++              {
++                end: 250,
++                label: "Happy Clients",
++                icon: (
++                  <svg viewBox="0 0 100 100" className="w-16 h-16 animate-pulse-slow overflow-visible pointer-events-none">
++                    <defs>
++                      <linearGradient id="orbitGrad" x1="0" y1="0" x2="1" y2="1">
++                        <stop offset="0%" stopColor="#c084fc" />
++                        <stop offset="100%" stopColor="#6366f1" />
++                      </linearGradient>
++                      <linearGradient id="sphereGrad" x1="0" y1="0" x2="1" y2="1">
++                        <stop offset="0%" stopColor="#e9d5ff" />
++                        <stop offset="100%" stopColor="#8b5cf6" />
++                      </linearGradient>
++                    </defs>
++                    <ellipse cx="50" cy="50" rx="35" ry="12" fill="none" stroke="url(#orbitGrad)" strokeWidth="2.5" transform="rotate(-30, 50, 50)" opacity="0.7" />
++                    <ellipse cx="50" cy="50" rx="35" ry="12" fill="none" stroke="url(#orbitGrad)" strokeWidth="1.5" transform="rotate(30, 50, 50)" opacity="0.7" />
++                    <circle cx="50" cy="50" r="16" fill="url(#sphereGrad)" filter="drop-shadow(0 0 8px rgba(139, 92, 246, 0.6))" />
++                    <circle cx="75" cy="35" r="4" fill="#fb7185" />
++                    <circle cx="25" cy="65" r="4" fill="#38bdf8" />
++                  </svg>
++                )
++              },
++              {
++                end: 25,
++                label: "Countries Served",
++                icon: (
++                  <svg viewBox="0 0 100 100" className="w-16 h-16 animate-spin-slow overflow-visible pointer-events-none">
++                    <defs>
++                      <linearGradient id="globeGrad" x1="0" y1="0" x2="1" y2="1">
++                        <stop offset="0%" stopColor="#38bdf8" />
++                        <stop offset="100%" stopColor="#0369a1" />
++                      </linearGradient>
++                    </defs>
++                    <circle cx="50" cy="50" r="32" fill="none" stroke="url(#globeGrad)" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.4" />
++                    <ellipse cx="50" cy="50" rx="32" ry="10" fill="none" stroke="url(#globeGrad)" strokeWidth="2" />
++                    <ellipse cx="50" cy="50" rx="32" ry="22" fill="none" stroke="url(#globeGrad)" strokeWidth="1.5" opacity="0.6" />
++                    <ellipse cx="50" cy="50" rx="10" ry="32" fill="none" stroke="url(#globeGrad)" strokeWidth="2" />
++                    <ellipse cx="50" cy="50" rx="22" ry="32" fill="none" stroke="url(#globeGrad)" strokeWidth="1.5" opacity="0.6" />
++                    <circle cx="50" cy="18" r="3" fill="#f43f5e" />
++                    <circle cx="68" cy="34" r="2.5" fill="#10b981" />
++                    <circle cx="32" cy="66" r="2.5" fill="#fbbf24" />
++                  </svg>
++                )
++              },
++              {
++                end: 10,
++                label: "Years of Experience",
++                icon: (
++                  <svg viewBox="0 0 100 100" className="w-16 h-16 animate-float-slow overflow-visible pointer-events-none">
++                    <defs>
++                      <linearGradient id="starGrad" x1="0" y1="0" x2="1" y2="1">
++                        <stop offset="0%" stopColor="#fbbf24" />
++                        <stop offset="100%" stopColor="#d97706" />
++                      </linearGradient>
++                    </defs>
++                    <path d="M50,15 L60,40 L85,40 L65,55 L75,80 L50,65 L25,80 L35,55 L15,40 L40,40 Z" fill="url(#starGrad)" filter="drop-shadow(0 4px 10px rgba(245,158,11,0.3))" transform="scale(0.85) translate(8, 8)" />
++                    <path d="M50,15 L60,40 L85,40 L65,55 L75,80 L50,65 L25,80 L35,55 L15,40 L40,40 Z" fill="none" stroke="#fff" strokeWidth="1.5" transform="scale(0.7) translate(21, 21)" opacity="0.6" />
++                    <circle cx="50" cy="50" r="6" fill="#fff" filter="drop-shadow(0 0 5px #fbbf24)" />
++                  </svg>
++                )
++              }
+             ].map((stat, idx) => (
+-              <div 
+-                key={idx} 
+-                className="glassmorphic-card rounded-2xl p-3 border-white/70 dark:border-white/5 shadow-[0_8px_24px_rgba(91,44,255,0.06)] hover:-translate-y-1 transition-all duration-300 flex items-center gap-2.5"
++              <div
++                key={idx}
++                className="glassmorphic-card rounded-3xl p-6 md:p-7 border border-white/60 dark:border-white/10 flex flex-col items-center justify-center text-center gap-4 transition-all duration-300 cursor-pointer group relative overflow-hidden"
++                style={{ transformStyle: 'preserve-3d' }}
++                onMouseMove={handleCardMouseMove}
++                onMouseLeave={handleCardMouseLeave}
+               >
+-                <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex-shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-400">
++                <div className="card-shine absolute -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.35)_0%,transparent_70%)] dark:bg-[radial-gradient(circle,rgba(255,255,255,0.14)_0%,transparent_70%)] opacity-0 pointer-events-none transition-opacity duration-300 z-0" />
++
++                <div
++                  className="w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center z-10 transition-all duration-500 group-hover:scale-110"
++                  style={{ transform: 'translateZ(45px)' }}
++                >
+                   {stat.icon}
+                 </div>
+-                <div>
+-                  <div className="text-sm font-black text-[#2e1065] dark:text-white leading-none">
++                <div className="z-10 flex flex-col items-center gap-1.5 select-none" style={{ transform: 'translateZ(25px)' }}>
++                  <div className="text-2xl md:text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-600 dark:from-purple-300 dark:via-pink-300 dark:to-indigo-300 tracking-tight leading-none">
+                     <CountUp end={stat.end} suffix="+" />
+                   </div>
+-                  <div className="text-[8px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-0.5 leading-snug">{stat.label}</div>
++                  <div className="text-[9px] md:text-[10px] lg:text-[11px] font-black text-slate-500 dark:text-purple-200/80 uppercase tracking-widest leading-normal whitespace-normal w-full" style={{ transform: 'translateZ(15px)' }}>
++                    {stat.label}
++                  </div>
+                 </div>
+               </div>
+             ))}
+@@ -634,3 +605,489 @@ export default function About() {
+     </section>
+   );
+ }
++
++// ==========================================
++// 3D Extruded World Map & Components
++// ==========================================
++
++const MAP_WIDTH_HALF = 5.5;
++const MAP_HEIGHT_HALF = 2.75;
++
++// Miller Cylindrical Projection to resolve stretching/squashing
++const projectCoords = (lon, lat) => {
++  const x = (lon / 180) * MAP_WIDTH_HALF;
++  const clampedLat = Math.max(-80, Math.min(85, lat));
++  const latRad = (clampedLat * Math.PI) / 180;
++  const yVal = 1.25 * Math.log(Math.tan(Math.PI / 4 + 0.4 * latRad));
++  const z = -(yVal / 2.0) * MAP_HEIGHT_HALF;
++  return [x, 0.38, z];
++};
++
++const createShapes = (coordinates) => {
++  if (coordinates.length === 0) return [];
++  const shapesList = [];
++  const exteriorRing = coordinates[0];
++  const shape = new THREE.Shape();
++
++  const project2D = (lon, lat) => {
++    const x = (lon / 180) * MAP_WIDTH_HALF;
++    const clampedLat = Math.max(-80, Math.min(85, lat));
++    const latRad = (clampedLat * Math.PI) / 180;
++    const yVal = 1.25 * Math.log(Math.tan(Math.PI / 4 + 0.4 * latRad));
++    const y = (yVal / 2.0) * MAP_HEIGHT_HALF;
++    return [x, y];
++  };
++
++  const [x0, y0] = project2D(exteriorRing[0][0], exteriorRing[0][1]);
++  shape.moveTo(x0, y0);
++  for (let i = 1; i < exteriorRing.length; i++) {
++    const [x, y] = project2D(exteriorRing[i][0], exteriorRing[i][1]);
++    shape.lineTo(x, y);
++  }
++
++  for (let h = 1; h < coordinates.length; h++) {
++    const holeRing = coordinates[h];
++    const holePath = new THREE.Path();
++    const [hx0, hy0] = project2D(holeRing[0][0], holeRing[0][1]);
++    holePath.moveTo(hx0, hy0);
++    for (let i = 1; i < holeRing.length; i++) {
++      const [hx, hy] = project2D(holeRing[i][0], holeRing[i][1]);
++      holePath.lineTo(hx, hy);
++    }
++    shape.holes.push(holePath);
++  }
++
++  shapesList.push(shape);
++  return shapesList;
++};
++
++function BorderLines({ shape, isDarkMode }) {
++  const { topGeometries, bottomGeometries } = useMemo(() => {
++    const topGeoms = [];
++    const bottomGeoms = [];
++
++    // Main boundary
++    const points = shape.getPoints();
++    if (points.length > 0) {
++      const topV3 = points.map(p => new THREE.Vector3(p.x, p.y, 0.36)); // slightly above depth = 0.35
++      const bottomV3 = points.map(p => new THREE.Vector3(p.x, p.y, -0.01)); // base boundary
++      topGeoms.push(new THREE.BufferGeometry().setFromPoints(topV3));
++      bottomGeoms.push(new THREE.BufferGeometry().setFromPoints(bottomV3));
++    }
++
++    // Hole boundaries
++    shape.holes.forEach(hole => {
++      const hPoints = hole.getPoints();
++      if (hPoints.length > 0) {
++        const topH = hPoints.map(p => new THREE.Vector3(p.x, p.y, 0.36));
++        const bottomH = hPoints.map(p => new THREE.Vector3(p.x, p.y, -0.01));
++        topGeoms.push(new THREE.BufferGeometry().setFromPoints(topH));
++        bottomGeoms.push(new THREE.BufferGeometry().setFromPoints(bottomH));
++      }
++    });
++
++    return { topGeometries: topGeoms, bottomGeometries: bottomGeoms };
++  }, [shape]);
++
++  return (
++    <group>
++      {/* Top glowing neon border */}
++      {topGeometries.map((geom, idx) => (
++        <lineLoop key={`top-${idx}`} geometry={geom}>
++          <lineBasicMaterial color={isDarkMode ? "#c084fc" : "#db2777"} transparent opacity={0.9} />
++        </lineLoop>
++      ))}
++
++      {/* Bottom base border */}
++      {bottomGeometries.map((geom, idx) => (
++        <lineLoop key={`bottom-${idx}`} geometry={geom}>
++          <lineBasicMaterial color={isDarkMode ? "#4b2b9c" : "#dfc1ff"} transparent opacity={0.4} />
++        </lineLoop>
++      ))}
++    </group>
++  );
++}
++
++function ContinentMesh({ shapes, isDarkMode }) {
++  const extrudeSettings = useMemo(() => ({
++    depth: 0.35,
++    bevelEnabled: true,
++    bevelSegments: 2,
++    steps: 1,
++    bevelSize: 0.02,
++    bevelThickness: 0.02,
++  }), []);
++
++  // Dynamic canvas texture creating a glowing dot-grid texture on the continents
++  const gridTexture = useMemo(() => {
++    const canvas = document.createElement('canvas');
++    canvas.width = 128;
++    canvas.height = 128;
++    const ctx = canvas.getContext('2d');
++
++    // Base transparent/dark color
++    ctx.fillStyle = '#000000';
++    ctx.fillRect(0, 0, 128, 128);
++
++    // Sub-grid lines
++    ctx.strokeStyle = 'rgba(139, 92, 246, 0.3)';
++    ctx.lineWidth = 1;
++    ctx.strokeRect(0, 0, 128, 128);
++
++    // Central glowing dot
++    ctx.fillStyle = 'rgba(192, 132, 252, 0.85)';
++    ctx.beginPath();
++    ctx.arc(64, 64, 2.5, 0, Math.PI * 2);
++    ctx.fill();
++
++    const texture = new THREE.CanvasTexture(canvas);
++    texture.wrapS = THREE.RepeatWrapping;
++    texture.wrapT = THREE.RepeatWrapping;
++    texture.repeat.set(16, 16);
++    return texture;
++  }, []);
++
++  return (
++    <group rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
++      {shapes.map((shape, idx) => (
++        <group key={idx}>
++          <mesh>
++            <extrudeGeometry args={[shape, extrudeSettings]} />
++            <meshPhysicalMaterial
++              color={isDarkMode ? "#221147" : "#7c3aed"}
++              emissive={isDarkMode ? "#581c87" : "#c084fc"}
++              emissiveMap={gridTexture}
++              emissiveIntensity={isDarkMode ? 1.6 : 1.3}
++              roughness={0.12}
++              metalness={0.2}
++              transmission={0.7}
++              thickness={1.1}
++              ior={1.6}
++              clearcoat={1.0}
++              clearcoatRoughness={0.05}
++              transparent={true}
++              opacity={isDarkMode ? 0.85 : 0.9}
++            />
++          </mesh>
++          <BorderLines shape={shape} isDarkMode={isDarkMode} />
++        </group>
++      ))}
++    </group>
++  );
++}
++
++function BaseRing({ isHQ }) {
++  const meshRef = useRef();
++  useFrame(({ clock }) => {
++    if (meshRef.current) {
++      const t = (clock.getElapsedTime() * 0.7) % 1.0;
++      const scale = 1.0 + t * 4.0;
++      const opacity = 0.9 * (1.0 - t);
++      meshRef.current.scale.set(scale, scale, 1);
++      meshRef.current.material.opacity = opacity;
++    }
++  });
++  return (
++    <mesh ref={meshRef} position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
++      <ringGeometry args={[0.07, 0.1, 24]} />
++      <meshBasicMaterial color={isHQ ? "#fbbf24" : "#d8b4fe"} transparent />
++    </mesh>
++  );
++}
++
++function LightBeam({ isHQ, height = 1.8 }) {
++  const meshRef = useRef();
++  useFrame(({ clock }) => {
++    if (meshRef.current) {
++      const t = clock.getElapsedTime();
++      const scaleVal = 1.0 + Math.sin(t * 4.0) * 0.08;
++      const opacVal = 0.22 + Math.sin(t * 2.5) * 0.04;
++      meshRef.current.scale.set(scaleVal, 1, scaleVal);
++      meshRef.current.material.opacity = opacVal;
++    }
++  });
++  return (
++    <mesh ref={meshRef} position={[0, height / 2, 0]}>
++      <cylinderGeometry args={[0.005, 0.05, height, 16, 1, true]} />
++      <meshBasicMaterial
++        color={isHQ ? "#fbbf24" : "#c084fc"}
++        transparent
++        side={THREE.DoubleSide}
++        depthWrite={false}
++      />
++    </mesh>
++  );
++}
++
++function LocationPin({ loc, isDarkMode }) {
++  const [x, y, z] = loc.position;
++  const height = loc.height || 1.8;
++  const gradId = `pinGrad-${loc.country.replace(/\s+/g, '-')}`;
++  return (
++    <group position={[x, y, z]}>
++      {/* Small base marker ring */}
++      <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
++        <ringGeometry args={[0, 0.1, 24]} />
++        <meshBasicMaterial color={loc.isHQ ? "#f59e0b" : "#a855f7"} transparent opacity={0.8} />
++      </mesh>
++
++      <BaseRing isHQ={loc.isHQ} />
++      <LightBeam isHQ={loc.isHQ} height={height} />
++
++      {/* Spot glowing sphere at base */}
++      <mesh position={[0, 0.02, 0]}>
++        <sphereGeometry args={[0.05, 16, 16]} />
++        <meshBasicMaterial color={loc.isHQ ? "#fbbf24" : "#e9d5ff"} />
++      </mesh>
++
++      {/* Point light to cast realistic lighting on surrounding continent surface */}
++      <pointLight position={[0, 0.05, 0]} distance={1.5} intensity={2.0} color={loc.isHQ ? "#fbbf24" : "#c084fc"} />
++
++      {/* Glassmorphic card */}
++      <Html
++        position={[0, height, 0]}
++        center
++        distanceFactor={7}
++        zIndexRange={[10, 50]}
++      >
++        <div className="flex flex-col items-center select-none pointer-events-none group/pin relative">
++          <div className="flex items-center gap-2.5 bg-white/45 dark:bg-[#120a2d]/45 border border-white/60 dark:border-white/10 shadow-[0_8px_32px_rgba(91,44,255,0.15)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md rounded-[20px] p-2 pr-3.5 whitespace-nowrap transform group-hover/pin:scale-105 transition-all duration-300">
++            {/* Glowing pin icon wrapper */}
++            <div className="w-8 h-8 rounded-xl bg-white/90 dark:bg-slate-900/80 flex items-center justify-center shadow-xs">
++              <svg className="w-4.5 h-4.5 filter drop-shadow-xs" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
++                <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill={`url(#${gradId})`} />
++                <defs>
++                  <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
++                    <stop offset="0%" stopColor={loc.isHQ ? "#f59e0b" : "#a855f7"} />
++                    <stop offset="100%" stopColor={loc.isHQ ? "#d97706" : "#6366f1"} />
++                  </linearGradient>
++                </defs>
++              </svg>
++            </div>
++
++            {/* Text contents */}
++            <div className="flex flex-col text-left">
++              <div className="text-[10px] font-black text-[#2e1065] dark:text-white tracking-wide uppercase leading-tight">{loc.country}</div>
++              <div className="text-[9px] font-bold text-slate-700 dark:text-purple-200/80 leading-snug">{loc.city}</div>
++              <div className="text-[7px] font-black text-slate-400 dark:text-purple-300/40 uppercase tracking-widest leading-none mt-0.5">{loc.office}</div>
++            </div>
++          </div>
++          <div className="w-1.5 h-1.5 bg-white/45 dark:bg-[#120a2d]/45 border-r border-b border-white/60 dark:border-white/10 rotate-45 -mt-[4px] backdrop-blur-md" />
++        </div>
++      </Html>
++    </group>
++  );
++}
++
++function ArcParticle({ curve, speed, color, delay }) {
++  const meshRef1 = useRef();
++  const meshRef2 = useRef();
++  const meshRef3 = useRef();
++
++  useFrame(({ clock }) => {
++    const time = clock.getElapsedTime() * speed + delay;
++
++    if (meshRef1.current) {
++      const t1 = time % 1.0;
++      const pos1 = curve.getPointAt(t1);
++      meshRef1.current.position.copy(pos1);
++    }
++    if (meshRef2.current) {
++      const t2 = (time - 0.02) % 1.0;
++      const pos2 = curve.getPointAt(t2 < 0 ? t2 + 1 : t2);
++      meshRef2.current.position.copy(pos2);
++    }
++    if (meshRef3.current) {
++      const t3 = (time - 0.04) % 1.0;
++      const pos3 = curve.getPointAt(t3 < 0 ? t3 + 1 : t3);
++      meshRef3.current.position.copy(pos3);
++    }
++  });
++
++  return (
++    <group>
++      {/* Lead particle */}
++      <mesh ref={meshRef1}>
++        <sphereGeometry args={[0.038, 8, 8]} />
++        <meshBasicMaterial color={color} toneMapped={false} />
++      </mesh>
++      {/* Trail 1 */}
++      <mesh ref={meshRef2}>
++        <sphereGeometry args={[0.026, 6, 6]} />
++        <meshBasicMaterial color={color} transparent opacity={0.6} toneMapped={false} />
++      </mesh>
++      {/* Trail 2 */}
++      <mesh ref={meshRef3}>
++        <sphereGeometry args={[0.015, 6, 6]} />
++        <meshBasicMaterial color={color} transparent opacity={0.25} toneMapped={false} />
++      </mesh>
++    </group>
++  );
++}
++
++function ConnectionArcs({ locations, hqCoords, isDarkMode }) {
++  const branches = useMemo(() => {
++    return locations.filter(loc => !loc.isHQ);
++  }, [locations]);
++
++  return (
++    <group>
++      {branches.map((loc, idx) => {
++        const start = new THREE.Vector3(hqCoords[0], 0.45, hqCoords[2]);
++        const end = new THREE.Vector3(loc.position[0], 0.45, loc.position[2]);
++
++        const curve = useMemo(() => {
++          const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
++          const dist = start.distanceTo(end);
++          mid.y += dist * 0.25 + 0.1;
++          return new THREE.QuadraticBezierCurve3(start, mid, end);
++        }, [start, end]);
++
++        const points = useMemo(() => curve.getPoints(40), [curve]);
++        const lineGeometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
++
++        return (
++          <group key={idx}>
++            <line geometry={lineGeometry}>
++              <lineBasicMaterial
++                color={isDarkMode ? "#d8b4fe" : "#a855f7"}
++                transparent
++                opacity={0.5}
++                linewidth={1.5}
++              />
++            </line>
++
++            <ArcParticle curve={curve} speed={0.35} color={isDarkMode ? "#fca55f" : "#eab308"} delay={0} />
++            <ArcParticle curve={curve} speed={0.35} color={isDarkMode ? "#fb7185" : "#ec4899"} delay={1.2} />
++          </group>
++        );
++      })}
++    </group>
++  );
++}
++
++function MapScene({ shapes, locations, hqCoords, isDarkMode }) {
++  const sceneRef = useRef();
++
++  return (
++    <group ref={sceneRef} rotation={[-Math.PI / 6.5, 0, 0]} position={[-0.8, -0.4, 0.2]}>
++      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
++        <planeGeometry args={[16, 8]} />
++        <meshBasicMaterial
++          color={isDarkMode ? "#0d0a21" : "#faf5ff"}
++          transparent
++          opacity={0.3}
++          side={THREE.DoubleSide}
++        />
++      </mesh>
++
++      {/* High tech subdiv 24 grid helper */}
++      <gridHelper args={[12, 24, isDarkMode ? "#581c87" : "#d8b4fe", isDarkMode ? "#1e153f" : "#f5f3ff"]} position={[0, -0.01, 0]} />
++
++      <ContinentMesh shapes={shapes} isDarkMode={isDarkMode} />
++
++      <ConnectionArcs locations={locations} hqCoords={hqCoords} isDarkMode={isDarkMode} />
++
++      {locations.map((loc, idx) => (
++        <LocationPin key={idx} loc={loc} isDarkMode={isDarkMode} />
++      ))}
++    </group>
++  );
++}
++
++export function ThreeDMap({ isDarkMode }) {
++  const [geoData, setGeoData] = useState(null);
++
++  useEffect(() => {
++    fetch('/ne_110m_land.json')
++      .then((res) => {
++        if (!res.ok) {
++          throw new Error(`Failed to load GeoJSON map: ${res.status}`);
++        }
++        return res.json();
++      })
++      .then((data) => setGeoData(data))
++      .catch((err) => console.error("Error loading GeoJSON map:", err));
++  }, []);
++
++  const shapes = useMemo(() => {
++    if (!geoData) return [];
++    const allShapes = [];
++
++    const isAntarctica = (coords) => {
++      const exterior = coords[0];
++      if (!exterior || exterior.length === 0) return false;
++      let latSum = 0;
++      for (let i = 0; i < exterior.length; i++) {
++        latSum += exterior[i][1];
++      }
++      const avgLat = latSum / exterior.length;
++      return avgLat < -60;
++    };
++
++    geoData.features.forEach((feature) => {
++      const { geometry } = feature;
++      if (!geometry) return;
++
++      if (geometry.type === 'Polygon') {
++        if (isAntarctica(geometry.coordinates)) return;
++        allShapes.push(...createShapes(geometry.coordinates));
++      } else if (geometry.type === 'MultiPolygon') {
++        geometry.coordinates.forEach((coords) => {
++          if (isAntarctica(coords)) return;
++          allShapes.push(...createShapes(coords));
++        });
++      }
++    });
++
++    return allShapes;
++  }, [geoData]);
++
++  const locationsWith3D = useMemo(() => {
++    const data = [
++      { country: "Canada", city: "Toronto, ON", office: "Office", lon: -79.38, lat: 43.65, height: 2.5, isHQ: false },
++      { country: "USA", city: "New York, NY", office: "Office", lon: -74.01, lat: 40.71, height: 1.4, isHQ: false },
++      { country: "Europe", city: "London, UK", office: "Office", lon: -0.13, lat: 51.51, isHQ: false },
++      { country: "India", city: "Ahmedabad (HQ)", office: "Mumbai | Pune Offices", lon: 72.57, lat: 23.02, isHQ: true },
++      { country: "South Africa", city: "Cape Town", office: "Office", lon: 18.42, lat: -33.92, height: 1.2, isHQ: false },
++      { country: "Australia", city: "Melbourne", office: "Office", lon: 144.96, lat: -37.81, isHQ: false }
++    ];
++    return data.map(loc => {
++      const [x, y, z] = projectCoords(loc.lon, loc.lat);
++      return { ...loc, position: [x, y, z] };
++    });
++  }, []);
++
++  const hqLoc = locationsWith3D.find(l => l.isHQ);
++  const hqCoords = hqLoc ? hqLoc.position : [0, 0, 0];
++
++  if (!geoData || shapes.length === 0) {
++    return (
++      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
++        <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
++        <span className="text-xs font-black text-slate-400 uppercase tracking-widest animate-pulse">Initializing 3D World...</span>
++      </div>
++    );
++  }
++
++  return (
++    <div className="w-full h-full relative">
++      <Canvas
++        camera={{ position: [0, 8.0, 5.0], fov: 45 }}
++        gl={{ antialias: true, alpha: true }}
++      >
++        <ambientLight intensity={isDarkMode ? 0.7 : 1.2} />
++        <directionalLight position={[5, 12, 6]} intensity={isDarkMode ? 1.0 : 1.5} />
++        <pointLight position={[-6, 8, -6]} intensity={isDarkMode ? 0.4 : 0.8} color="#a855f7" />
++
++        <MapScene
++          shapes={shapes}
++          locations={locationsWith3D}
++          hqCoords={hqCoords}
++          isDarkMode={isDarkMode}
++        />
++      </Canvas>
++    </div>
++  );
++}
++
