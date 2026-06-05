@@ -463,7 +463,7 @@ function FlowParticles({ curve, color, isActive }) {
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
         const speed = isActive ? 0.75 : 0.35;
-        
+
         // Particle 1
         if (particle1.current) {
             const progress = (t * speed) % 1.0;
@@ -472,7 +472,7 @@ function FlowParticles({ curve, color, isActive }) {
             const scale = (0.045 + Math.sin(t * 4.5) * 0.01) * (isActive ? 1.5 : 1.0);
             particle1.current.scale.set(scale, scale, scale);
         }
-        
+
         // Particle 2
         if (particle2.current) {
             const progress = (t * speed + 0.33) % 1.0;
@@ -645,7 +645,7 @@ function PowerHubScene({ activeService }) {
                 <div style={{
                     color: 'white',
                     textAlign: 'center',
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: "'Poppins', 'Inter', sans-serif",
                     width: '320px',
                     userSelect: 'none'
                 }}>
@@ -979,11 +979,11 @@ function ConnectionLines({ paths, activeService }) {
                 const radius = isActive ? 7.5 : 4.5;
                 const dur = isActive ? `${parseFloat(line.dur) / 2}s` : line.dur;
                 return (
-                    <circle 
-                        key={i} 
-                        r={radius} 
-                        fill={line.color} 
-                        filter="url(#pp-glow)" 
+                    <circle
+                        key={i}
+                        r={radius}
+                        fill={line.color}
+                        filter="url(#pp-glow)"
                         opacity={opacity}
                         style={{ transition: 'opacity 0.3s ease, r 0.3s ease' }}
                     >
@@ -1085,7 +1085,7 @@ export default function PowerPlatformService() {
             className="relative w-full overflow-hidden"
             style={{
                 background: 'linear-gradient(135deg, #faf5ff 0%, #f0e8ff 20%, #fdf4ff 45%, #eff6ff 65%, #f8f5ff 85%, #fefce8 100%)',
-                fontFamily: "'Poppins', sans-serif"
+                fontFamily: "'Poppins', 'Inter', sans-serif"
             }}
         >
             {/* Background blobs */}

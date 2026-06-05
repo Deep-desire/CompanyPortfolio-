@@ -6,6 +6,11 @@ import Services from './components/Services';
 import AIservice from './components/AIservice';
 import PowerPlatformService from './components/powerplatformservice';
 import Dynamicservice from './components/Dynamicservice';
+import Sharepointservice from './components/Sharepointservice';
+import Azureservice from './components/Azureservice';
+import WebAndMobile from './components/Web&mobileservice';
+import PowerBI from './components/PowerBIservice';
+import SEOservice from './components/SEOservice';
 import Projects from './components/Projects';
 import TechStack from './components/TechStack';
 import MeetPeople from './components/MeetPeople';
@@ -33,6 +38,11 @@ function App() {
         <AIservice />
         <PowerPlatformService />
         <Dynamicservice />
+        <Sharepointservice />
+        <Azureservice />
+        <WebAndMobile />
+        <PowerBI />
+        <SEOservice />
         <Projects />
         <TechStack />
         <MeetPeople />

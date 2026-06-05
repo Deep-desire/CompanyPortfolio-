@@ -10,15 +10,25 @@ import * as d3 from 'd3';
 import { cn } from '../lib/utils';
 import ThreeScene from './ThreeScene';
 
+// Seeded PRNG for purity rules
+const seededRandom = (seed) => {
+  let s = seed;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+};
+
 // --- Space Starfield Component (Used in Slide 2) ---
 function StarField({ count = 200 }) {
   const stars = useMemo(() => {
+    const random = seededRandom(101);
     return Array.from({ length: count }).map(() => ({
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-      size: Math.random() * 2 + 1,
-      duration: Math.random() * 3 + 2,
-      delay: Math.random() * 5,
+      top: `${random() * 100}%`,
+      left: `${random() * 100}%`,
+      size: random() * 2 + 1,
+      duration: random() * 3 + 2,
+      delay: random() * 5,
     }));
   }, [count]);
 

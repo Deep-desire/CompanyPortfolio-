@@ -110,6 +110,15 @@ const fragmentShader = `
   }
 `;
 
+// Seeded PRNG for purity rules
+const seededRandom = (seed) => {
+  let s = seed;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+};
+
 const InteractiveParticles = ({ count = 6000 }) => {
   const meshRef = useRef();
   const { viewport } = useThree();
@@ -118,18 +127,19 @@ const InteractiveParticles = ({ count = 6000 }) => {
   const [positions, sizes] = useMemo(() => {
     const positions = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
+    const random = seededRandom(42);
     
     for (let i = 0; i < count; i++) {
       // Math for a sphere distribution
-      const theta = Math.random() * 2 * Math.PI;
-      const phi = Math.acos((Math.random() * 2) - 1);
-      const radius = 2.5 + (Math.random() - 0.5) * 0.5;
+      const theta = random() * 2 * Math.PI;
+      const phi = Math.acos((random() * 2) - 1);
+      const radius = 2.5 + (random() - 0.5) * 0.5;
       
       positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
       positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = radius * Math.cos(phi);
       
-      sizes[i] = Math.random() * 2.0 + 0.5;
+      sizes[i] = random() * 2.0 + 0.5;
     }
     
     return [positions, sizes];

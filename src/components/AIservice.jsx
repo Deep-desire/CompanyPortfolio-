@@ -1367,10 +1367,10 @@ export default function AIservice() {
                                         display: 'inline-block',
                                         boxShadow: '0 8px 32px rgba(124,58,237,0.2)',
                                     }}>
-                                        <p style={{ color: '#ffffff', fontSize: '11px', fontWeight: 600, fontFamily: 'Poppins, sans-serif', margin: 0 }}>
+                                        <p style={{ color: '#ffffff', fontSize: '11px', fontWeight: 600, fontFamily: "'Poppins', 'Inter', sans-serif", margin: 0 }}>
                                             AI Orchestration Layer
                                         </p>
-                                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '8px', fontFamily: 'Poppins, sans-serif', margin: '1px 0 0 0', whiteSpace: 'nowrap' }}>
+                                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '8px', fontFamily: "'Poppins', 'Inter', sans-serif", margin: '1px 0 0 0', whiteSpace: 'nowrap' }}>
                                             Prompt Engineering &bull; Model Routing &bull; Guardrails &bull; Monitoring
                                         </p>
                                     </div>

@@ -82,11 +82,11 @@ function DeliveryTruck3D() {
             {/* Wheels */}
             {[-0.35, 0.05, 0.45].map((x, i) => (
                 <group key={i} position={[x, 0.0, 0]}>
-                    <mesh position={[0, 0, 0.165]} rotation={[Math.PI/2, 0, 0]} castShadow>
+                    <mesh position={[0, 0, 0.165]} rotation={[Math.PI / 2, 0, 0]} castShadow>
                         <cylinderGeometry args={[0.08, 0.08, 0.05, 16]} />
                         <meshStandardMaterial color="#1e293b" roughness={0.8} />
                     </mesh>
-                    <mesh position={[0, 0, -0.165]} rotation={[Math.PI/2, 0, 0]} castShadow>
+                    <mesh position={[0, 0, -0.165]} rotation={[Math.PI / 2, 0, 0]} castShadow>
                         <cylinderGeometry args={[0.08, 0.08, 0.05, 16]} />
                         <meshStandardMaterial color="#1e293b" roughness={0.8} />
                     </mesh>
@@ -356,7 +356,7 @@ function DynamicsHubScene({ activeService }) {
                 <div style={{
                     color: 'white',
                     textAlign: 'center',
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: "'Poppins', 'Inter', sans-serif",
                     width: '320px',
                     userSelect: 'none'
                 }}>
@@ -773,7 +773,7 @@ export default function Dynamicservice() {
             className="relative w-full overflow-hidden"
             style={{
                 background: 'linear-gradient(135deg, #f8f4ff 0%, #eee7ff 30%, #fdf7ff 60%, #eee7ff 85%, #fbf8ff 100%)',
-                fontFamily: "'Poppins', sans-serif"
+                fontFamily: "'Poppins', 'Inter', sans-serif"
             }}
         >
             {/* Connection lines overlay */}

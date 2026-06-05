@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-family-sans: 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-family-sans: 'Poppins', 'Inter', sans-serif;
 
   --color-primary-cyan: #06b6d4;
   --color-primary-purple: #8b5cf6;
@@ -27,7 +27,7 @@
 }
 
 :root {
-  font-family: 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Poppins', 'Inter', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -62,7 +62,7 @@ body {
 }
 
 .hero-font {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', 'Inter', sans-serif;
 }
 
 .glass-card {
