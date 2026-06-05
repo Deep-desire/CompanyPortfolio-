@@ -543,9 +543,18 @@ function PowerHubScene({ activeService }) {
         platformRef.current.rotation.y = t * 0.12;
 
         // Pulsate emissive intensities
-        if (rimRef1.current) rimRef1.current.material.emissiveIntensity = 1.0 + Math.sin(t * 3.0) * 0.4;
-        if (rimRef2.current) rimRef2.current.material.emissiveIntensity = 0.8 + Math.cos(t * 2.5) * 0.3;
-        if (rimRef3.current) rimRef3.current.material.emissiveIntensity = 1.2 + Math.sin(t * 4.0) * 0.5;
+        if (rimRef1.current) {
+            const mat = rimRef1.current.material || rimRef1.current;
+            mat.emissiveIntensity = 1.0 + Math.sin(t * 3.0) * 0.4;
+        }
+        if (rimRef2.current) {
+            const mat = rimRef2.current.material || rimRef2.current;
+            mat.emissiveIntensity = 0.8 + Math.cos(t * 2.5) * 0.3;
+        }
+        if (rimRef3.current) {
+            const mat = rimRef3.current.material || rimRef3.current;
+            mat.emissiveIntensity = 1.2 + Math.sin(t * 4.0) * 0.5;
+        }
     });
 
     const currentText = serviceTexts[activeService] || serviceTexts.default;
