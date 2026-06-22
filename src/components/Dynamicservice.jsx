@@ -1,8 +1,4 @@
-import { useRef, useMemo, Suspense, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Html } from '@react-three/drei';
 import { motion } from 'motion/react';
-import * as THREE from 'three';
 import {
     Zap, BarChart3, Database, Bot, Layout, Workflow,
     Globe, Mail, Phone, Link2, Share2, Play,
@@ -43,361 +39,6 @@ const coverageModules = [
     { label: 'HR', icon: Users },
 ];
 
-// ─── 3D Auxiliary Components ──────────────────────────────────────────────────
-function CoinStack3D() {
-    return (
-        <group position={[-1.7, -0.92, 0.8]} rotation={[0, 0.2, 0.1]} scale={[0.85, 0.85, 0.85]}>
-            {/* Coin 1 */}
-            <mesh position={[0, 0, 0]} castShadow>
-                <cylinderGeometry args={[0.15, 0.15, 0.05, 32]} />
-                <meshStandardMaterial color="#fbbf24" metalness={0.9} roughness={0.1} />
-            </mesh>
-            {/* Coin 2 */}
-            <mesh position={[0.05, 0.05, -0.05]} castShadow>
-                <cylinderGeometry args={[0.15, 0.15, 0.05, 32]} />
-                <meshStandardMaterial color="#f59e0b" metalness={0.9} roughness={0.1} />
-            </mesh>
-            {/* Coin 3 */}
-            <mesh position={[-0.08, 0.1, 0.02]} castShadow>
-                <cylinderGeometry args={[0.15, 0.15, 0.05, 32]} />
-                <meshStandardMaterial color="#d97706" metalness={0.9} roughness={0.1} />
-            </mesh>
-        </group>
-    );
-}
-
-function DeliveryTruck3D() {
-    return (
-        <group position={[1.7, -0.92, 0.8]} rotation={[0, -0.5, 0]} scale={[0.65, 0.65, 0.65]}>
-            {/* Cabin */}
-            <mesh position={[-0.3, 0.15, 0]} castShadow>
-                <boxGeometry args={[0.4, 0.3, 0.3]} />
-                <meshStandardMaterial color="#4f46e5" metalness={0.5} roughness={0.2} />
-            </mesh>
-            {/* Trailer */}
-            <mesh position={[0.2, 0.25, 0]} castShadow>
-                <boxGeometry args={[0.7, 0.45, 0.32]} />
-                <meshStandardMaterial color="#ffffff" metalness={0.2} roughness={0.3} />
-            </mesh>
-            {/* Wheels */}
-            {[-0.35, 0.05, 0.45].map((x, i) => (
-                <group key={i} position={[x, 0.0, 0]}>
-                    <mesh position={[0, 0, 0.165]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-                        <cylinderGeometry args={[0.08, 0.08, 0.05, 16]} />
-                        <meshStandardMaterial color="#1e293b" roughness={0.8} />
-                    </mesh>
-                    <mesh position={[0, 0, -0.165]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-                        <cylinderGeometry args={[0.08, 0.08, 0.05, 16]} />
-                        <meshStandardMaterial color="#1e293b" roughness={0.8} />
-                    </mesh>
-                </group>
-            ))}
-        </group>
-    );
-}
-
-function Warehouse3D() {
-    return (
-        <group position={[0, -0.95, 1.8]} scale={[0.65, 0.65, 0.65]} rotation={[0, Math.PI, 0]}>
-            {/* Main building */}
-            <mesh position={[0, 0.25, 0]} castShadow>
-                <boxGeometry args={[0.8, 0.5, 0.6]} />
-                <meshStandardMaterial color="#475569" metalness={0.5} roughness={0.2} />
-            </mesh>
-            {/* Roof */}
-            <mesh position={[0, 0.55, 0]} rotation={[0, 0, Math.PI / 4]} castShadow>
-                <boxGeometry args={[0.58, 0.58, 0.62]} />
-                <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.2} />
-            </mesh>
-            {/* Door */}
-            <mesh position={[0, 0.15, 0.301]}>
-                <boxGeometry args={[0.3, 0.3, 0.01]} />
-                <meshStandardMaterial color="#ec4899" emissive="#ec4899" emissiveIntensity={0.5} />
-            </mesh>
-        </group>
-    );
-}
-
-// ─── 3D Dynamics 365 Logo Component ──────────────────────────────────────────
-function Dynamics3653DLogo() {
-    const groupRef = useRef();
-    useFrame((state) => {
-        if (!groupRef.current) return;
-        const t = state.clock.getElapsedTime();
-        groupRef.current.rotation.y = t * 0.55;
-        groupRef.current.position.y = 0.25 + Math.sin(t * 1.5) * 0.08;
-    });
-
-    const extrudeSettings = useMemo(() => ({
-        depth: 0.12,
-        bevelEnabled: true,
-        bevelSegments: 5,
-        steps: 1,
-        bevelSize: 0.02,
-        bevelThickness: 0.02,
-    }), []);
-
-    // Chevron 1: Back layer
-    const chevron1 = useMemo(() => {
-        const s = new THREE.Shape();
-        s.moveTo(-0.4, 0.5);
-        s.lineTo(0.1, 0.0);
-        s.lineTo(-0.4, -0.5);
-        s.lineTo(-0.2, -0.5);
-        s.lineTo(0.3, 0.0);
-        s.lineTo(-0.2, 0.5);
-        return s;
-    }, []);
-
-    // Chevron 2: Front layer
-    const chevron2 = useMemo(() => {
-        const s = new THREE.Shape();
-        s.moveTo(-0.2, 0.3);
-        s.lineTo(0.3, -0.2);
-        s.lineTo(-0.2, -0.7);
-        s.lineTo(0.0, -0.7);
-        s.lineTo(0.5, -0.2);
-        s.lineTo(0.0, 0.3);
-        return s;
-    }, []);
-
-    return (
-        <group ref={groupRef} position={[0, 0.2, 0]}>
-            {/* Back Indigo Ribbon */}
-            <mesh castShadow position={[0, 0, -0.05]}>
-                <extrudeGeometry args={[chevron1, extrudeSettings]} />
-                <meshPhysicalMaterial
-                    color="#4f46e5"
-                    emissive="#3730a3"
-                    emissiveIntensity={0.2}
-                    roughness={0.15}
-                    metalness={0.6}
-                    clearcoat={1.0}
-                    transmission={0.2}
-                />
-            </mesh>
-            {/* Front Purple/Pink Ribbon */}
-            <mesh castShadow position={[0.1, 0.1, 0.05]}>
-                <extrudeGeometry args={[chevron2, extrudeSettings]} />
-                <meshPhysicalMaterial
-                    color="#ec4899"
-                    emissive="#db2777"
-                    emissiveIntensity={0.3}
-                    roughness={0.1}
-                    metalness={0.4}
-                    clearcoat={1.0}
-                    transmission={0.4}
-                />
-            </mesh>
-        </group>
-    );
-}
-
-// ─── Glowing Base / Pedestal ──────────────────────────────────────────────────
-function NeonRing({ radius, color, speed, thickness = 0.018 }) {
-    const ref = useRef();
-    useFrame((state) => {
-        if (!ref.current) return;
-        const t = state.clock.getElapsedTime();
-        ref.current.rotation.z = t * speed;
-        ref.current.material.emissiveIntensity = 0.5 + Math.sin(t * 2.5 + radius) * 0.4;
-    });
-    return (
-        <mesh ref={ref} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[radius, thickness, 8, 80]} />
-            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.6} transparent opacity={0.9} />
-        </mesh>
-    );
-}
-
-function GroundPipe({ angle, color, isActive }) {
-    const ref = useRef();
-    useFrame((state) => {
-        if (!ref.current) return;
-        const t = state.clock.getElapsedTime();
-        const baseIntensity = isActive ? 1.6 : 0.4;
-        const speed = isActive ? 6.0 : 2.5;
-        ref.current.material.emissiveIntensity = baseIntensity + Math.sin(t * speed + angle * 2) * (isActive ? 0.8 : 0.3);
-    });
-
-    const length = 2.8;
-    const radius = isActive ? 0.032 : 0.022;
-
-    const x = Math.sin(angle) * (length / 2);
-    const z = Math.cos(angle) * (length / 2);
-
-    return (
-        <mesh position={[x, -0.98, z]} rotation={[Math.PI / 2, 0, angle + Math.PI / 2]}>
-            <cylinderGeometry args={[radius, radius, length, 16]} />
-            <meshStandardMaterial
-                color={color}
-                emissive={color}
-                emissiveIntensity={isActive ? 2.0 : 0.6}
-                metalness={0.5}
-                roughness={0.1}
-            />
-        </mesh>
-    );
-}
-
-function DynamicsHubScene({ activeService }) {
-    const platformRef = useRef();
-    const rimRef1 = useRef();
-    const rimRef2 = useRef();
-    const rimRef3 = useRef();
-
-    useFrame((state) => {
-        if (!platformRef.current) return;
-        const t = state.clock.getElapsedTime();
-        platformRef.current.rotation.y = t * 0.12;
-
-        // Pulsate base neon rims
-        if (rimRef1.current) {
-            const mat = rimRef1.current.material || rimRef1.current;
-            mat.emissiveIntensity = 1.0 + Math.sin(t * 3.0) * 0.4;
-        }
-        if (rimRef2.current) {
-            const mat = rimRef2.current.material || rimRef2.current;
-            mat.emissiveIntensity = 0.8 + Math.cos(t * 2.5) * 0.3;
-        }
-        if (rimRef3.current) {
-            const mat = rimRef3.current.material || rimRef3.current;
-            mat.emissiveIntensity = 1.2 + Math.sin(t * 4.0) * 0.5;
-        }
-    });
-
-    const serviceTexts = {
-        crm: { title: "Dynamics CRM", tagline: "Build strong relationships and drive sales growth." },
-        finance: { title: "Dynamics Finance", tagline: "Gain real-time visibility & smarter decisions." },
-        erp: { title: "Dynamics ERP", tagline: "Streamline operations & improve agility." },
-        commerce: { title: "Dynamics Commerce", tagline: "Connected commerce experiences that delight." },
-        supplychain: { title: "Supply Chain", tagline: "Optimize supply chain & deliver on promises." },
-        default: { title: "Microsoft Dynamics 365", tagline: "One Platform. Unlimited Possibilities." }
-    };
-
-    const currentText = serviceTexts[activeService] || serviceTexts.default;
-
-    return (
-        <>
-            <ambientLight color="#ddd6fe" intensity={1.3} />
-            <pointLight position={[-3, 4, 3]} color="#a855f7" intensity={9} distance={14} />
-            <pointLight position={[3, 3, -3]} color="#3b82f6" intensity={7} distance={14} />
-            <pointLight position={[0, 5, 0]} color="#ffffff" intensity={3} distance={12} />
-            <spotLight position={[0, 6, 2]} color="#ec4899" intensity={5} angle={0.4} penumbra={1} distance={16} />
-            <pointLight position={[0, -2, 0]} color="#7c3aed" intensity={2} distance={6} />
-
-            {/* Ground pipes extending from pedestal */}
-            <GroundPipe angle={-3 * Math.PI / 4} color="#a855f7" isActive={activeService === 'crm'} />
-            <GroundPipe angle={-Math.PI / 4} color="#fb923c" isActive={activeService === 'finance'} />
-            <GroundPipe angle={3 * Math.PI / 4} color="#4f46e5" isActive={activeService === 'erp'} />
-            <GroundPipe angle={Math.PI / 2} color="#ec4899" isActive={activeService === 'commerce'} />
-            <GroundPipe angle={Math.PI / 4} color="#06b6d4" isActive={activeService === 'supplychain'} />
-
-            {/* 3D Auxiliary objects placed relative to the cards */}
-            <CoinStack3D />
-            <DeliveryTruck3D />
-            <Warehouse3D />
-
-            {/* Platform base */}
-            <group ref={platformRef} position={[0, -0.9, 0]}>
-                {/* Bottom Base */}
-                <mesh position={[0, -0.15, 0]} receiveShadow>
-                    <cylinderGeometry args={[1.7, 1.75, 0.15, 64]} />
-                    <meshStandardMaterial color="#0b0b1a" metalness={0.9} roughness={0.15} />
-                </mesh>
-                {/* Bottom neon glow ring */}
-                <mesh position={[0, -0.07, 0]} rotation={[Math.PI / 2, 0, 0]}>
-                    <torusGeometry args={[1.72, 0.025, 8, 64]} />
-                    <meshStandardMaterial ref={rimRef1} color="#ec4899" emissive="#ec4899" emissiveIntensity={1.0} transparent opacity={0.8} />
-                </mesh>
-
-                {/* Main Central Cylinder (where text goes) */}
-                <mesh position={[0, 0.3, 0]} castShadow receiveShadow>
-                    <cylinderGeometry args={[1.45, 1.45, 0.8, 64]} />
-                    <meshStandardMaterial color="#131034" metalness={0.9} roughness={0.1} />
-                </mesh>
-                {/* Middle neon glow ring */}
-                <mesh position={[0, 0.72, 0]} rotation={[Math.PI / 2, 0, 0]}>
-                    <torusGeometry args={[1.47, 0.02, 8, 64]} />
-                    <meshStandardMaterial ref={rimRef2} color="#7c3aed" emissive="#7c3aed" emissiveIntensity={0.8} transparent opacity={0.8} />
-                </mesh>
-
-                {/* Top concentric discs (Chrome metallic steps) */}
-                <mesh position={[0, 0.76, 0]} castShadow receiveShadow>
-                    <cylinderGeometry args={[1.25, 1.25, 0.08, 64]} />
-                    <meshStandardMaterial color="#ffffff" metalness={1.0} roughness={0.05} />
-                </mesh>
-                <mesh position={[0, 0.84, 0]} castShadow receiveShadow>
-                    <cylinderGeometry args={[1.05, 1.05, 0.08, 64]} />
-                    <meshStandardMaterial color="#ffffff" metalness={1.0} roughness={0.05} />
-                </mesh>
-                <mesh position={[0, 0.92, 0]} castShadow receiveShadow>
-                    <cylinderGeometry args={[0.85, 0.85, 0.06, 64]} />
-                    <meshStandardMaterial color="#ffffff" metalness={1.0} roughness={0.05} />
-                </mesh>
-                {/* Top neon glow ring */}
-                <mesh position={[0, 0.96, 0]} rotation={[Math.PI / 2, 0, 0]}>
-                    <torusGeometry args={[0.87, 0.015, 8, 64]} />
-                    <meshStandardMaterial ref={rimRef3} color="#06b6d4" emissive="#06b6d4" emissiveIntensity={1.2} transparent opacity={0.9} />
-                </mesh>
-            </group>
-
-            {/* Neon rings orbiting the hub */}
-            <NeonRing radius={1.05} color="#7c3aed" speed={0.35} />
-            <NeonRing radius={1.3} color="#3b82f6" speed={-0.22} thickness={0.014} />
-            <NeonRing radius={1.62} color="#ec4899" speed={0.16} thickness={0.011} />
-            <NeonRing radius={1.9} color="#06b6d4" speed={-0.12} thickness={0.009} />
-
-            {/* Floating Logo */}
-            <Float speed={1.5} rotationIntensity={0.06} floatIntensity={0.45}>
-                <Dynamics3653DLogo />
-            </Float>
-
-            {/* Pedestal Text (Html projected overlay, 100% reliable and non-suspending) */}
-            <Html
-                position={[0, -0.58, 1.48]}
-                transform
-                occlude={false}
-                distanceFactor={1.2}
-                rotation={[-0.15, 0, 0]}
-                pointerEvents="none"
-            >
-                <div style={{
-                    color: 'white',
-                    textAlign: 'center',
-                    fontFamily: "'Poppins', 'Inter', sans-serif",
-                    width: '320px',
-                    userSelect: 'none'
-                }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: 900, margin: 0, lineHeight: 1.1, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
-                        {currentText.title}
-                    </h2>
-                    <p style={{ fontSize: '8px', color: '#cbd5e1', fontWeight: 500, margin: '5px 0 0 0', lineHeight: 1.3, textShadow: '0 1px 5px rgba(0,0,0,0.4)' }}>
-                        {currentText.tagline}
-                    </p>
-                </div>
-            </Html>
-
-            {/* Ground glow */}
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.0, 0]}>
-                <circleGeometry args={[2.2, 64]} />
-                <meshBasicMaterial color="#7c3aed" transparent opacity={0.07} />
-            </mesh>
-        </>
-    );
-}
-
-function DynamicsHub3D({ activeService }) {
-    return (
-        <Canvas camera={{ position: [0, 1.5, 5], fov: 42 }} gl={{ antialias: true, alpha: true }} shadows style={{ background: 'transparent' }}>
-            <Suspense fallback={null}>
-                <DynamicsHubScene activeService={activeService} />
-            </Suspense>
-        </Canvas>
-    );
-}
-
-// ─── Mockup Components ────────────────────────────────────────────────────────
 function CRMMockup() {
     return (
         <div className="flex gap-2 h-20 items-stretch">
@@ -544,71 +185,6 @@ function SupplyChainMockup() {
 }
 
 // ─── Connection Lines SVG ─────────────────────────────────────────────────────
-function ConnectionLines({ paths }) {
-    const lines = [
-        { id: 'dyn-c1', path: paths.crm, color: "#a855f7", cls: "dyn-flow1", dur: "3s" },
-        { id: 'dyn-c2', path: paths.finance, color: "#fb923c", cls: "dyn-flow2", dur: "3.5s" },
-        { id: 'dyn-c3', path: paths.erp, color: "#4f46e5", cls: "dyn-flow3", dur: "2.5s" },
-        { id: 'dyn-c4', path: paths.commerce, color: "#ec4899", cls: "dyn-flow4", dur: "4s" },
-        { id: 'dyn-c5', path: paths.supplyChain, color: "#0ea5e9", cls: "dyn-flow5", dur: "2.8s" },
-    ];
-
-    const activeLines = lines.filter(l => l.path);
-
-    return (
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" style={{ minHeight: '100%' }}>
-            <defs>
-                <filter id="dyn-glow">
-                    <feGaussianBlur stdDeviation="2.5" result="blur" />
-                    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                </filter>
-                {/* Gradients */}
-                {activeLines.map(l => (
-                    <linearGradient key={l.id} id={l.id} x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#7c3aed" />
-                        <stop offset="100%" stopColor={l.color} />
-                    </linearGradient>
-                ))}
-                <style>{`
-                    .dyn-flow1 { animation: dyn-dash1 3s linear infinite; }
-                    .dyn-flow2 { animation: dyn-dash2 3.5s linear infinite; }
-                    .dyn-flow3 { animation: dyn-dash3 2.5s linear infinite; }
-                    .dyn-flow4 { animation: dyn-dash4 4s linear infinite; }
-                    .dyn-flow5 { animation: dyn-dash5 2.8s linear infinite; }
-                    @keyframes dyn-dash1 { to { stroke-dashoffset: -60; } }
-                    @keyframes dyn-dash2 { to { stroke-dashoffset: -70; } }
-                    @keyframes dyn-dash3 { to { stroke-dashoffset: -50; } }
-                    @keyframes dyn-dash4 { to { stroke-dashoffset: -65; } }
-                    @keyframes dyn-dash5 { to { stroke-dashoffset: -55; } }
-                `}</style>
-            </defs>
-
-            {/* Static dashed flow lines */}
-            {activeLines.map((line) => (
-                <path
-                    key={line.id}
-                    d={line.path}
-                    fill="none"
-                    stroke={`url(#${line.id})`}
-                    strokeWidth="2"
-                    strokeDasharray="10,6"
-                    className={line.cls}
-                    filter="url(#dyn-glow)"
-                    opacity="0.8"
-                />
-            ))}
-
-            {/* Pulsing animated dots */}
-            {activeLines.map((line, i) => (
-                <circle key={i} r="5" fill={line.color} filter="url(#dyn-glow)" opacity="0.9">
-                    <animateMotion dur={line.dur} repeatCount="indefinite" path={line.path} />
-                </circle>
-            ))}
-        </svg>
-    );
-}
-
-// ─── Service Card Component ──────────────────────────────────────────────────
 function ServiceCard({ title, tagline, color, accentColor, bullets, MockupComponent, delay = 0, Icon, horizontal = false, onMouseEnter, onMouseLeave }) {
     return (
         <motion.div
@@ -705,79 +281,8 @@ function MicrosoftIcon({ className = 'w-6 h-6' }) {
 
 // ─── Main Page Component ──────────────────────────────────────────────────────
 export default function Dynamicservice() {
-    const [activeService, setActiveService] = useState(null);
-    const containerRef = useRef(null);
-    const hubRef = useRef(null);
-    const crmRef = useRef(null);
-    const financeRef = useRef(null);
-    const erpRef = useRef(null);
-    const commerceRef = useRef(null);
-    const supplyChainRef = useRef(null);
-
-    const [linePaths, setLinePaths] = useState({
-        crm: '',
-        finance: '',
-        erp: '',
-        commerce: '',
-        supplyChain: ''
-    });
-
-    useEffect(() => {
-        const updatePaths = () => {
-            if (!containerRef.current || !hubRef.current) return;
-            const containerRect = containerRef.current.getBoundingClientRect();
-            const hubRect = hubRef.current.getBoundingClientRect();
-
-            // Center of the Hub
-            const hubX = hubRect.left - containerRect.left + hubRect.width / 2;
-            const hubY = hubRect.top - containerRect.top + hubRect.height / 2;
-
-            const getPoint = (ref, side) => {
-                if (!ref.current) return { x: 0, y: 0 };
-                const rect = ref.current.getBoundingClientRect();
-                const x = rect.left - containerRect.left;
-                const y = rect.top - containerRect.top;
-                if (side === 'left') {
-                    return { x: x + rect.width, y: y + rect.height / 2 };
-                } else if (side === 'right') {
-                    return { x: x, y: y + rect.height / 2 };
-                } else if (side === 'bottom') {
-                    return { x: x + rect.width / 2, y: y };
-                } else {
-                    return { x: x + rect.width / 2, y: y + rect.height };
-                }
-            };
-
-            const crmPt = getPoint(crmRef, 'left');
-            const finPt = getPoint(financeRef, 'left');
-            const erpPt = getPoint(erpRef, 'right');
-            const comPt = getPoint(commerceRef, 'right');
-            const scPt = getPoint(supplyChainRef, 'bottom');
-
-            setLinePaths({
-                crm: `M ${hubX},${hubY} C ${(hubX + crmPt.x) / 2},${hubY} ${(hubX + crmPt.x) / 2},${crmPt.y} ${crmPt.x},${crmPt.y}`,
-                finance: `M ${hubX},${hubY} C ${(hubX + finPt.x) / 2},${hubY} ${(hubX + finPt.x) / 2},${finPt.y} ${finPt.x},${finPt.y}`,
-                erp: `M ${hubX},${hubY} C ${(hubX + erpPt.x) / 2},${hubY} ${(hubX + erpPt.x) / 2},${erpPt.y} ${erpPt.x},${erpPt.y}`,
-                commerce: `M ${hubX},${hubY} C ${(hubX + comPt.x) / 2},${hubY} ${(hubX + comPt.x) / 2},${comPt.y} ${comPt.x},${comPt.y}`,
-                supplyChain: `M ${hubX},${hubY} C ${hubX},${(hubY + scPt.y) / 2} ${scPt.x},${(hubY + scPt.y) / 2} ${scPt.x},${scPt.y}`
-            });
-        };
-
-        updatePaths();
-        const t1 = setTimeout(updatePaths, 150);
-        const t2 = setTimeout(updatePaths, 600);
-
-        window.addEventListener('resize', updatePaths);
-        return () => {
-            clearTimeout(t1);
-            clearTimeout(t2);
-            window.removeEventListener('resize', updatePaths);
-        };
-    }, []);
-
     return (
         <section
-            ref={containerRef}
             id="dynamics-showcase"
             className="relative w-full overflow-hidden"
             style={{
@@ -785,10 +290,6 @@ export default function Dynamicservice() {
                 fontFamily: "'Poppins', 'Inter', sans-serif"
             }}
         >
-            {/* Connection lines overlay */}
-            <div className="absolute inset-0 z-10 pointer-events-none">
-                <ConnectionLines paths={linePaths} />
-            </div>
             {/* Background glowing blobs */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <div className="absolute top-1/4 left-1/4 w-[550px] h-[550px] bg-purple-300/25 rounded-full blur-[120px]" />
@@ -892,7 +393,7 @@ export default function Dynamicservice() {
 
                     {/* ── LEFT COLUMN: CRM + Finance ── */}
                     <div className="flex flex-col gap-3">
-                        <div ref={crmRef} className="flex-1">
+                        <div className="flex-1">
                             <ServiceCard
                                 title="CRM"
                                 tagline="Build strong customer relationships."
@@ -902,11 +403,9 @@ export default function Dynamicservice() {
                                 bullets={['Sales Automation', 'Customer Service', 'Marketing Automation', 'Field Service']}
                                 delay={0.1}
                                 horizontal={true}
-                                onMouseEnter={() => setActiveService('crm')}
-                                onMouseLeave={() => setActiveService(null)}
                             />
                         </div>
-                        <div ref={financeRef} className="flex-1">
+                        <div className="flex-1">
                             <ServiceCard
                                 title="Finance"
                                 tagline="Real-time financial visibility & smarter decisions."
@@ -916,28 +415,16 @@ export default function Dynamicservice() {
                                 bullets={['General Ledger', 'Accounts Payable', 'Accounts Receivable', 'Financial Reporting']}
                                 delay={0.2}
                                 horizontal={true}
-                                onMouseEnter={() => setActiveService('finance')}
-                                onMouseLeave={() => setActiveService(null)}
                             />
                         </div>
                     </div>
 
-                    {/* ── CENTER: 3D Hub ── */}
-                    <div ref={hubRef} className="flex flex-col items-center justify-center" style={{ minHeight: '460px' }}>
-                        <div className="w-full h-full" style={{ minHeight: '460px' }}>
-                            <Suspense fallback={
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <div className="w-16 h-16 rounded-full bg-purple-200 animate-pulse" />
-                                </div>
-                            }>
-                                <DynamicsHub3D activeService={activeService} />
-                            </Suspense>
-                        </div>
-                    </div>
+                    {/* Center animation removed */}
+                    <div style={{ minHeight: '460px' }} aria-hidden="true" />
 
                     {/* ── RIGHT COLUMN: ERP + Commerce ── */}
                     <div className="flex flex-col gap-3">
-                        <div ref={erpRef} className="flex-1">
+                        <div className="flex-1">
                             <ServiceCard
                                 title="ERP"
                                 tagline="Streamline operations and improve agility."
@@ -947,11 +434,9 @@ export default function Dynamicservice() {
                                 bullets={['Financial Management', 'Project Operations', 'Resource Management', 'Reporting & Analytics']}
                                 delay={0.15}
                                 horizontal={true}
-                                onMouseEnter={() => setActiveService('erp')}
-                                onMouseLeave={() => setActiveService(null)}
                             />
                         </div>
-                        <div ref={commerceRef} className="flex-1">
+                        <div className="flex-1">
                             <ServiceCard
                                 title="Commerce"
                                 tagline="Connected commerce experiences that delight."
@@ -961,8 +446,6 @@ export default function Dynamicservice() {
                                 bullets={['Unified Commerce', 'eCommerce', 'Store Operations', 'Customer Loyalty']}
                                 delay={0.25}
                                 horizontal={true}
-                                onMouseEnter={() => setActiveService('commerce')}
-                                onMouseLeave={() => setActiveService(null)}
                             />
                         </div>
                     </div>
@@ -973,7 +456,7 @@ export default function Dynamicservice() {
                 <div className="grid grid-cols-12 gap-3.5 mt-3 items-stretch">
                     {/* Supply Chain Card (Bottom Center) */}
                     <div className="col-span-12 lg:col-span-9">
-                        <div ref={supplyChainRef} className="w-full">
+                        <div className="w-full">
                             <ServiceCard
                                 title="Supply Chain"
                                 tagline="Optimize your supply chain and deliver on customer promise."
@@ -983,8 +466,6 @@ export default function Dynamicservice() {
                                 bullets={['Inventory Management', 'Warehouse Management', 'Demand Forecasting', 'Logistics & Transportation']}
                                 delay={0.35}
                                 horizontal={true}
-                                onMouseEnter={() => setActiveService('supplychain')}
-                                onMouseLeave={() => setActiveService(null)}
                             />
                         </div>
                     </div>

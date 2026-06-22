@@ -105,9 +105,9 @@ function AzureCloudScene() {
             trigger: video,
             start: 'top bottom', // when top of video enters bottom of viewport
             end: 'bottom top',   // when bottom of video leaves top of viewport
-            onEnter: () => video.play().catch(() => {}),
+            onEnter: () => video.play().catch(() => { }),
             onLeave: () => video.pause(),
-            onEnterBack: () => video.play().catch(() => {}),
+            onEnterBack: () => video.play().catch(() => { }),
             onLeaveBack: () => video.pause()
         });
 

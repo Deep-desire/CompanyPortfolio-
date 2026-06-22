@@ -4,23 +4,39 @@ import Hero from './components/Hero';
 import About from './components/About';
 import Services from './components/Services';
 import AIservice from './components/AIservice';
-import PowerPlatformService from './components/powerplatformservice';
+import PowerPlatformService from './components/PowerPlatformService';
 import Dynamicservice from './components/Dynamicservice';
 import Sharepointservice from './components/Sharepointservice';
 import Azureservice from './components/Azureservice';
 import WebAndMobile from './components/Web&mobileservice';
 import PowerBI from './components/PowerBIservice';
 import SEOservice from './components/SEOservice';
+import AIExpertise from './components/AIExpertise';
+import Products from './components/Products';
+import PMP from './components/PMP';
+import LMS from './components/LMS';
+import AMS from './components/AMS';
+import OrganizationChart from './components/OrganizationChart';
+import EmployeeDirectory from './components/EmployeeDirectory';
+import NewJoineePlatform from './components/NewJoineePlatform';
+import IndustriesClient from './components/Industries&Client';
+import Engagement from './components/Engagement';
+import DevelopmentTeam from './components/DevelopmentTeam';
+import DeliveryModel from './components/DeliveryModel';
+import BusinessChallenges from './components/BusinessChallenges';
+import SANAS from './components/SANAS';
+import EnterpriseMining from './components/EnterpriseMining';
+import WhyChooseUs from './components/WhyChooseUs';
+import Connect from './components/Connect';
 import Projects from './components/Projects';
 import TechStack from './components/TechStack';
 import MeetPeople from './components/MeetPeople';
-import WhyChooseUs from './components/WhyChooseUs';
 import Testimonials from './components/Testimonials';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 
 function App() {
-  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+  const [, setActiveHeroIndex] = useState(0);
 
   useEffect(() => {
     // Force light mode
@@ -43,10 +59,26 @@ function App() {
         <WebAndMobile />
         <PowerBI />
         <SEOservice />
+        <AIExpertise />
+        <Products />
+        <PMP />
+        <LMS />
+        <AMS />
+        <OrganizationChart />
+        <EmployeeDirectory />
+        <NewJoineePlatform />
+        <IndustriesClient />
+        <Engagement />
+        <DevelopmentTeam />
+        <DeliveryModel />
+        <BusinessChallenges />
+        <SANAS />
+        <EnterpriseMining />
+        <WhyChooseUs />
+        <Connect />
         <Projects />
         <TechStack />
         <MeetPeople />
-        <WhyChooseUs />
         <Testimonials />
         <Contact />
       </main>
