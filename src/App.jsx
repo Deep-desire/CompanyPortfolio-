@@ -4,7 +4,7 @@ import Hero from './components/Hero';
 import About from './components/About';
 import Services from './components/Services';
 import AIservice from './components/AIservice';
-import PowerPlatformService from './components/PowerPlatformService';
+import PowerPlatformService from './components/powerplatformservice';
 import Dynamicservice from './components/Dynamicservice';
 import Sharepointservice from './components/Sharepointservice';
 import Azureservice from './components/Azureservice';
